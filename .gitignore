@@ -1,0 +1,52 @@
+# Gradle Wrapper 파일 (필수 파일 제외)
+!gradlew
+!gradlew.bat
+.gradle/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+
+# 빌드 결과물
+/build/
+out/
+
+# IntelliJ IDEA 프로젝트 파일
+.idea/
+*.iml
+*.iws
+
+# Eclipse 프로젝트 파일
+*.classpath
+*.project
+*.settings/
+
+# VS Code 설정 파일
+.vscode/
+
+# MacOS, Linux, Windows 시스템 파일
+.DS_Store
+*.swp
+*.swo
+*.bak
+Thumbs.db
+desktop.ini
+
+# 로그 파일
+*.log
+
+# Java 클래스 파일
+*.class
+
+# JAR, WAR, EAR 파일
+*.jar
+*.war
+*.ear
+
+# 특정 환경에 따라 제외할 파일들 (옵션)
+# 환경별 파일
+*.env
+
+# 테스트 리포트, 빌드 캐시 등
+/reports/
+/test-results/
+/test-output/
+/target/
