@@ -1,6 +1,4 @@
 spring:
-  application:
-    name: api-artist-workspace
   jpa:
     properties:
       hibernate:
@@ -11,6 +9,3 @@ spring:
     username: sa
     password:
     url: jdbc:h2:mem:test;MODE=MySQL;
-liquibase:
-  enabled: true
-  change-log: classpath:db/changelog/db.changelog-master.yaml
