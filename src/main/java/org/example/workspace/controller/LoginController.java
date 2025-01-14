@@ -3,13 +3,13 @@ package org.example.workspace.controller;
 import lombok.RequiredArgsConstructor;
 import org.example.workspace.dto.request.AuthReqDto;
 import org.example.workspace.dto.response.AuthTokenResDto;
+import org.example.workspace.security.CustomUserDetails;
 import org.example.workspace.util.JwtUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -31,9 +31,9 @@ public class LoginController {
         );
 
         Object principal = authentication.getPrincipal();
-        if (!(principal instanceof UserDetails))
+        if (!(principal instanceof CustomUserDetails))
             throw new AuthenticationCredentialsNotFoundException(authReqDto.username());
 
-        return ResponseEntity.ok(jwtUtil.generateToken((UserDetails) principal));
+        return ResponseEntity.ok(jwtUtil.generateToken((CustomUserDetails) principal));
     }
 }

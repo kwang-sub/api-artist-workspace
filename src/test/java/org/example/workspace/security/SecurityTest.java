@@ -3,7 +3,7 @@ package org.example.workspace.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.assertj.core.api.SoftAssertions;
 import org.example.workspace.dto.request.AuthReqDto;
-import org.example.workspace.entity.code.RoleName;
+import org.example.workspace.entity.code.RoleType;
 import org.example.workspace.factory.ObjectFactory;
 import org.example.workspace.util.JwtUtil;
 import org.junit.jupiter.api.DisplayName;
@@ -56,7 +56,7 @@ public class SecurityTest {
                         .header("Origin", "http://localhost:9000")
                         .header("Access-Control-Request-Method", "POST")
                 )
-        // then
+                // then
                 .andExpect(status().isOk());
 
     }
@@ -73,7 +73,7 @@ public class SecurityTest {
                         .header("Origin", "http://localhost:8081")
                         .header("Access-Control-Request-Method", "POST")
                 )
-        // then
+                // then
                 .andExpect(status().isForbidden());
     }
 
@@ -99,8 +99,8 @@ public class SecurityTest {
         SoftAssertions softAssertions = new SoftAssertions();
         softAssertions.assertThat(accessToken).isNotNull();
         softAssertions.assertThat(jwtUtil.isTokenExpired(accessToken)).isFalse();
-        softAssertions.assertThat(jwtUtil.extractUsername(accessToken)).isEqualTo( authReqDto.username());
-        softAssertions.assertThat(jwtUtil.extractRole(accessToken)).isEqualTo(RoleName.ROLE_ARTIST);
+        softAssertions.assertThat(jwtUtil.extractUsername(accessToken)).isEqualTo(authReqDto.username());
+        softAssertions.assertThat(jwtUtil.extractRole(accessToken)).isEqualTo(RoleType.ROLE_ARTIST);
         softAssertions.assertThat(refreshToken).isNotNull();
         softAssertions.assertThat(jwtUtil.isTokenExpired(refreshToken)).isFalse();
 

@@ -33,5 +33,5 @@ public abstract class AbstractAuditingEntity {
 
     @Column(name = "is_deleted")
     @ColumnDefault("false")
-    private boolean isDeleted;
+    private Boolean isDeleted;
 }

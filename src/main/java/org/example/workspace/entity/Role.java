@@ -1,15 +1,21 @@
 package org.example.workspace.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.example.workspace.common.ApplicationConstant;
-import org.example.workspace.entity.code.RoleName;
+import org.example.workspace.entity.code.RoleType;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-@Getter
 @Entity
+@Getter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "tbl_role")
 public class Role extends AbstractAuditingEntity {
     @Id
@@ -22,7 +28,7 @@ public class Role extends AbstractAuditingEntity {
 
     @Column(name = "role_name", nullable = false, length = ApplicationConstant.Entity.MAX_LENGTH_TEXT_SMALL)
     @Enumerated(EnumType.STRING)
-    private RoleName roleName;
+    private RoleType roleType;
 
     @Column(name = "role_desc", length = ApplicationConstant.Entity.MAX_LENGTH_TEXT_NORMAL)
     private String roleDesc;

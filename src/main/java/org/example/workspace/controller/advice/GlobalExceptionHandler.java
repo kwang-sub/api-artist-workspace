@@ -3,6 +3,7 @@ package org.example.workspace.controller.advice;
 import lombok.RequiredArgsConstructor;
 import org.example.workspace.common.ApplicationConstant;
 import org.example.workspace.dto.response.FieldErrorResDto;
+import org.example.workspace.exception.MessageArgumentException;
 import org.springframework.context.MessageSource;
 import org.springframework.context.NoSuchMessageException;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -45,13 +46,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ProblemDetail> handleAuthenticationException(AuthenticationException e) {
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, getMessage(e));
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, getMessage(e, null));
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(problem);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ProblemDetail> handleAccessDeniedException(AccessDeniedException e) {
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, getMessage(e));
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, getMessage(e, null));
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(problem);
     }
 
@@ -62,7 +63,16 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ProblemDetail problem;
         try {
             status = HttpStatus.BAD_REQUEST;
-            problem = ProblemDetail.forStatusAndDetail(status, getMessage(e));
+
+            String message;
+            if (e instanceof MessageArgumentException) {
+                MessageArgumentException argException = (MessageArgumentException) e;
+                message = getMessage(e, argException.getArgs());
+            } else {
+                message = getMessage(e, null);
+            }
+
+            problem = ProblemDetail.forStatusAndDetail(status, message);
         } catch (NoSuchMessageException name) {
             status = HttpStatus.INTERNAL_SERVER_ERROR;
             problem = ProblemDetail.forStatusAndDetail(status, "관리자에게 문의 바랍니다.");
@@ -71,8 +81,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(status).body(problem);
     }
 
-    private String getMessage(Exception e) {
+    private String getMessage(Exception e, Object[] args) {
         String code = "error." + e.getClass().getName();
-        return messageSource.getMessage(code, null, LocaleContextHolder.getLocale());
+        return messageSource.getMessage(code, args, LocaleContextHolder.getLocale());
     }
 }

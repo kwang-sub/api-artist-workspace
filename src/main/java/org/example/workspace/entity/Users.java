@@ -1,13 +1,19 @@
 package org.example.workspace.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.example.workspace.common.ApplicationConstant;
 
 import java.util.Objects;
 
 @Entity
 @Getter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "tbl_users")
 public class Users extends AbstractAuditingEntity {
 
@@ -28,10 +34,10 @@ public class Users extends AbstractAuditingEntity {
     private String email;
 
     @Column(name = "is_activated", nullable = false)
-    private Byte isActivated;
+    private Boolean isActivated;
 
     @Column(name = "is_use_temp_password", nullable = false)
-    private Byte isUseTempPassword;
+    private Boolean isUseTempPassword;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "role_id", nullable = false)

@@ -5,9 +5,8 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.example.workspace.common.ApplicationConstant;
 import org.example.workspace.dto.response.AuthTokenResDto;
-import org.example.workspace.entity.code.RoleName;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.example.workspace.entity.code.RoleType;
+import org.example.workspace.security.CustomUserDetails;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
@@ -30,27 +29,25 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(secret.getBytes());
     }
 
-    public AuthTokenResDto generateToken(UserDetails userDetails) {
+    public AuthTokenResDto generateToken(CustomUserDetails userDetails) {
         String accessToken = this.generateAccessToken(userDetails);
         String refreshToken = this.generateRefreshToken(userDetails);
         return new AuthTokenResDto(accessToken, refreshToken);
     }
 
-    private String generateAccessToken(UserDetails userDetails) {
-        // TODO UserDetails로 예외 처리 추가 필요
-        GrantedAuthority role = userDetails.getAuthorities().stream().findFirst().orElse(null);
-        return generateToken(userDetails.getUsername(), role, jwtExpirationMs);
+    private String generateAccessToken(CustomUserDetails userDetails) {
+        RoleType roleType = userDetails.getRoleType();
+        return generateToken(userDetails.getUsername(), roleType, jwtExpirationMs);
     }
 
-    private String generateRefreshToken(UserDetails userDetails) {
-        // TODO UserDetails로 예외 처리 추가 필요
-        GrantedAuthority role = userDetails.getAuthorities().stream().findFirst().orElse(null);
-        return generateToken(userDetails.getUsername(), role, refreshExpirationMs);
+    private String generateRefreshToken(CustomUserDetails userDetails) {
+        RoleType roleType = userDetails.getRoleType();
+        return generateToken(userDetails.getUsername(), roleType, refreshExpirationMs);
     }
 
-    private String generateToken(String username, GrantedAuthority role, long expiration) {
+    private String generateToken(String username, RoleType roleType, long expiration) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put(ApplicationConstant.Jwt.CLAIMS_KEY_ROLE, role.getAuthority());
+        claims.put(ApplicationConstant.Jwt.CLAIMS_KEY_ROLE, roleType.name());
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(username)
@@ -70,15 +67,15 @@ public class JwtUtil {
                 .getSubject();
     }
 
-    public RoleName extractRole(String token) {
-        String roleString = Jwts.parserBuilder()
+    public RoleType extractRole(String token) {
+        String roleTypeString = Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
                 .parseClaimsJws(token)
                 .getBody()
                 .get(ApplicationConstant.Jwt.CLAIMS_KEY_ROLE, String.class);
 
-        return RoleName.valueOf(roleString);
+        return RoleType.valueOf(roleTypeString);
     }
 
     // 토큰 만료 여부 확인
