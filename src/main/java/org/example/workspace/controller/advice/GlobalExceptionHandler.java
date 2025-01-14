@@ -1,6 +1,7 @@
 package org.example.workspace.controller.advice;
 
 import lombok.RequiredArgsConstructor;
+import org.example.workspace.common.ApplicationConstant;
 import org.example.workspace.dto.response.FieldErrorResDto;
 import org.springframework.context.MessageSource;
 import org.springframework.context.NoSuchMessageException;
@@ -25,24 +26,20 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     private final MessageSource messageSource;
 
-    public static final String FIELD_ERROR_KEY = "fieldErrors";
 
     @Override
-    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
-                                                                  HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
         BindingResult result = ex.getBindingResult();
         List<FieldErrorResDto> fieldErrors = result.getFieldErrors().stream()
                 .map(f -> new FieldErrorResDto(f.getObjectName(), f.getField(), f.getDefaultMessage()))
                 .toList();
-        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST,
-                Optional.ofNullable(result.getGlobalError()).map(ObjectError::getDefaultMessage)
-                        .orElseGet(() -> fieldErrors.isEmpty()
-                                ? ex.getMessage()
-                                // fieldError with [0] index can not be null
-                                : fieldErrors.get(0).message()));
-        problem.setProperty(FIELD_ERROR_KEY, fieldErrors);
-        // ...
+        String detail = Optional.ofNullable(result.getGlobalError())
+                .map(ObjectError::getDefaultMessage)
+                .orElseGet(() -> fieldErrors.isEmpty() ? ex.getMessage() : fieldErrors.get(0).message());
+
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, detail);
+        problem.setProperty(ApplicationConstant.ExceptionHandler.FIELD_ERROR_KEY, fieldErrors);
+
         return handleExceptionInternal(ex, problem, headers, status, request);
     }
 
@@ -76,11 +73,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     private String getMessage(Exception e) {
         String code = "error." + e.getClass().getName();
-        String message;
-
-
-        message = messageSource.getMessage(code, null, LocaleContextHolder.getLocale());
-
-        return message;
+        return messageSource.getMessage(code, null, LocaleContextHolder.getLocale());
     }
 }

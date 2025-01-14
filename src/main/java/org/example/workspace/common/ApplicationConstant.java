@@ -21,4 +21,10 @@ public final class ApplicationConstant {
     public static final class Jwt {
         public static final String CLAIMS_KEY_ROLE = "role";
     }
+
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    public static final class ExceptionHandler {
+        public static final String FIELD_ERROR_KEY = "fieldErrors";
+    }
+
 }
