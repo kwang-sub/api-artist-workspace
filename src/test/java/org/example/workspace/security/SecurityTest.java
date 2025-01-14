@@ -3,7 +3,7 @@ package org.example.workspace.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.assertj.core.api.SoftAssertions;
 import org.example.workspace.dto.request.AuthReqDto;
-import org.example.workspace.entity.code.RoleCode;
+import org.example.workspace.entity.code.RoleName;
 import org.example.workspace.factory.ObjectFactory;
 import org.example.workspace.util.JwtUtil;
 import org.junit.jupiter.api.DisplayName;
@@ -100,7 +100,7 @@ public class SecurityTest {
         softAssertions.assertThat(accessToken).isNotNull();
         softAssertions.assertThat(jwtUtil.isTokenExpired(accessToken)).isFalse();
         softAssertions.assertThat(jwtUtil.extractUsername(accessToken)).isEqualTo( authReqDto.username());
-        softAssertions.assertThat(jwtUtil.extractRole(accessToken)).isEqualTo(RoleCode.ROLE_ARTIST);
+        softAssertions.assertThat(jwtUtil.extractRole(accessToken)).isEqualTo(RoleName.ROLE_ARTIST);
         softAssertions.assertThat(refreshToken).isNotNull();
         softAssertions.assertThat(jwtUtil.isTokenExpired(refreshToken)).isFalse();
 
