@@ -3,6 +3,7 @@ package org.example.workspace.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.assertj.core.api.SoftAssertions;
 import org.example.workspace.dto.request.AuthReqDto;
+import org.example.workspace.dto.request.TokenRefreshReqDto;
 import org.example.workspace.entity.code.RoleType;
 import org.example.workspace.factory.ObjectFactory;
 import org.example.workspace.util.JwtUtil;
@@ -105,5 +106,36 @@ public class SecurityTest {
         softAssertions.assertThat(jwtUtil.isTokenExpired(refreshToken)).isFalse();
 
         softAssertions.assertAll();
+    }
+
+    @Test
+    @DisplayName("쿠폰 재발급 유효성 확인")
+    void 쿠폰_재발급_유효성_확인() throws Exception {
+        // given
+        final String username = "user";
+        final RoleType roleType = RoleType.ROLE_ARTIST;
+        String refreshToken = jwtUtil.generateToken(username, roleType).refreshToken();
+        TokenRefreshReqDto tokenRefreshReqDto = new TokenRefreshReqDto(refreshToken);
+
+        // when
+        MvcResult mvcResult = mvc.perform(post("/api/v1/login-refresh")
+                        .content(objectMapper.writeValueAsBytes(tokenRefreshReqDto))
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk())
+                .andReturn();
+
+        // then
+        String responseBody = mvcResult.getResponse().getContentAsString();
+        String newAccessToken = objectMapper.readTree(responseBody).get("accessToken").asText();
+        String newRefreshToken = objectMapper.readTree(responseBody).get("refreshToken").asText();
+
+        SoftAssertions softAssertions = new SoftAssertions();
+        softAssertions.assertThat(newAccessToken).isNotNull();
+        softAssertions.assertThat(jwtUtil.isTokenExpired(newAccessToken)).isFalse();
+        softAssertions.assertThat(jwtUtil.extractUsername(newAccessToken)).isEqualTo(username);
+        softAssertions.assertThat(jwtUtil.extractRole(newAccessToken)).isEqualTo(roleType);
+        softAssertions.assertThat(newRefreshToken).isNotNull();
+        softAssertions.assertThat(jwtUtil.isTokenExpired(newRefreshToken)).isFalse();
     }
 }
