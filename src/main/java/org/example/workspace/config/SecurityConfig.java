@@ -52,6 +52,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers("/api/v1/login").permitAll()
+                            .requestMatchers("/api/v1/login-refresh").permitAll()
                                 .anyRequest().authenticated()
                 );
 

@@ -2,10 +2,13 @@ package org.example.workspace.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.example.workspace.dto.request.AuthReqDto;
+import org.example.workspace.dto.request.TokenRefreshReqDto;
 import org.example.workspace.dto.response.AuthTokenResDto;
+import org.example.workspace.entity.code.RoleType;
 import org.example.workspace.security.CustomUserDetails;
 import org.example.workspace.util.JwtUtil;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -33,7 +36,22 @@ public class LoginController {
         Object principal = authentication.getPrincipal();
         if (!(principal instanceof CustomUserDetails))
             throw new AuthenticationCredentialsNotFoundException(authReqDto.username());
-
-        return ResponseEntity.ok(jwtUtil.generateToken((CustomUserDetails) principal));
+        CustomUserDetails customUserDetails = (CustomUserDetails) principal;
+        return ResponseEntity.ok(jwtUtil.generateToken(customUserDetails.getUsername(), customUserDetails.getRoleType()));
     }
+
+    @PostMapping("/login-refresh")
+    public ResponseEntity<AuthTokenResDto> loginRefresh(@RequestBody @Validated TokenRefreshReqDto dto) {
+        String refreshToken = dto.refreshToken();
+
+        String username = jwtUtil.extractUsername(refreshToken);
+        RoleType roleType = jwtUtil.extractRole(refreshToken);
+        if (!jwtUtil.validateToken(refreshToken, username))
+            throw new AccessDeniedException("Invalid refresh token");
+
+        AuthTokenResDto authTokenResDto = jwtUtil.generateToken(username, roleType);
+
+        return ResponseEntity.ok(authTokenResDto);
+    }
+
 }
