@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.example.workspace.util.JwtUtil;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -26,11 +27,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        List<String> pathList = List.of(
-                "/api/v1/login"
+        List<String> patternList = List.of(
+                HttpMethod.POST + "/api/v1/login",
+                HttpMethod.POST + "/api/v1/login-refresh",
+                HttpMethod.POST + "/api/v1/users"
         );
+
         String requestURI = request.getRequestURI();
-        return pathList.stream().anyMatch(requestURI::startsWith);
+        String method = request.getMethod();
+
+        String requestIdentifier = method + requestURI;
+
+        return patternList.stream().anyMatch(requestIdentifier::equals);
     }
 
     @Override
@@ -46,7 +54,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        String token = authHeader.substring(7); // "Bearer " 제거
+        String token = authHeader.substring(7);
         try {
             String username = jwtUtil.extractUsername(token);
             if (username == null) {

@@ -3,7 +3,6 @@ package org.example.workspace.util;
 import org.assertj.core.api.SoftAssertions;
 import org.example.workspace.dto.response.AuthTokenResDto;
 import org.example.workspace.entity.code.RoleType;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -16,28 +15,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class JwtUtilTest {
 
-    private JwtUtil jwtUtil;
-    private String username;
-    private RoleType roleType;
-    private Clock clock;
-    private Instant now;
-
-    @BeforeEach
-    void setUp() {
-        now = Instant.now();
-        clock = Clock.fixed(now, ZoneId.systemDefault());
-        jwtUtil = new JwtUtil(clock);
-        username = "user";
-        roleType = RoleType.ROLE_ARTIST;
-    }
-
     @Test
     @DisplayName("토큰 생성 테스트")
     void 토큰_생성_테스트() {
         // given
+        Clock clock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
+        JwtUtil jwtUtil = new JwtUtil(clock);
 
         // when
-        AuthTokenResDto tokens = jwtUtil.generateToken(username, roleType);
+        AuthTokenResDto tokens = jwtUtil.generateToken("user", RoleType.ROLE_ARTIST);
 
         // then
         SoftAssertions softAssertions = new SoftAssertions();
@@ -52,74 +38,102 @@ class JwtUtilTest {
     @DisplayName("사용자 이름 추출 테스트")
     void 사용자_이름_추출_테스트() {
         // given
-        AuthTokenResDto tokens = jwtUtil.generateToken(username, roleType);
+        Clock clock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
+        JwtUtil jwtUtil = new JwtUtil(clock);
+        AuthTokenResDto tokens = jwtUtil.generateToken("user", RoleType.ROLE_ARTIST);
 
         // when
         String extractedUsername = jwtUtil.extractUsername(tokens.accessToken());
 
         // then
-        assertThat(extractedUsername).isEqualTo(username);
+        assertThat(extractedUsername).isEqualTo("user");
     }
 
     @Test
     @DisplayName("사용자 역할 추출 테스트")
     void 사용자_역할_추출_테스트() {
         // given
-        AuthTokenResDto tokens = jwtUtil.generateToken(username, roleType);
+        Clock clock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
+        JwtUtil jwtUtil = new JwtUtil(clock);
+        AuthTokenResDto tokens = jwtUtil.generateToken("user", RoleType.ROLE_ARTIST);
 
         // when
         RoleType extractedRole = jwtUtil.extractRole(tokens.accessToken());
 
         // then
-        assertThat(extractedRole).isEqualTo(roleType);
+        assertThat(extractedRole).isEqualTo(RoleType.ROLE_ARTIST);
     }
 
     @Test
     @DisplayName("액세스 토큰 만료 테스트")
     void 액세스_토큰_만료_테스트() {
         // given
-        AuthTokenResDto tokens = jwtUtil.generateToken(username, roleType);
-        assertThat(jwtUtil.isTokenExpired(tokens.accessToken())).isFalse();
+        Instant now = Instant.now();
+        Clock clock = Clock.fixed(now, ZoneId.systemDefault());
+        JwtUtil jwtUtil = new JwtUtil(clock);
+        AuthTokenResDto tokens = jwtUtil.generateToken("user", RoleType.ROLE_ARTIST);
+
+        final int tokenValidityInSeconds = 5 * 60;
+
+        Clock expiredClock = Clock.fixed(now.plusSeconds(tokenValidityInSeconds), ZoneId.systemDefault());
+        JwtUtil expiredJwtUtil = new JwtUtil(expiredClock);
+
+        Clock nonExpiredClock = Clock.fixed(now.plusSeconds(tokenValidityInSeconds - 1), ZoneId.systemDefault());
+        JwtUtil nonExpiredJwtUtil = new JwtUtil(nonExpiredClock);
+
+        String token = tokens.accessToken();
 
         // when
-        clock = Clock.fixed(now.plusSeconds(5 * 60), ZoneId.systemDefault());
-        JwtUtil expiredJwtUtil = new JwtUtil(clock);
-
-        clock = Clock.fixed(now.plusSeconds((5 * 60) - 1), ZoneId.systemDefault());
-        JwtUtil nonExpiredJwtUtil = new JwtUtil(clock);
+        boolean jwtResult = jwtUtil.isTokenExpired(token);
+        boolean expiredJwtResult = expiredJwtUtil.isTokenExpired(token);
+        boolean nonExpiredJwtResult = nonExpiredJwtUtil.isTokenExpired(token);
 
         // then
-        assertThat(expiredJwtUtil.isTokenExpired(tokens.accessToken())).isTrue();
-        assertThat(nonExpiredJwtUtil.isTokenExpired(tokens.accessToken())).isFalse();
+        assertThat(jwtResult).isFalse();
+        assertThat(expiredJwtResult).isTrue();
+        assertThat(nonExpiredJwtResult).isFalse();
     }
 
     @Test
     @DisplayName("리프레쉬 토큰 만료 테스트")
     void 리프레쉬_토큰_만료_테스트() {
         // given
-        AuthTokenResDto tokens = jwtUtil.generateToken(username, roleType);
-        assertThat(jwtUtil.isTokenExpired(tokens.refreshToken())).isFalse();
+        Instant now = Instant.now();
+        Clock clock = Clock.fixed(now, ZoneId.systemDefault());
+        JwtUtil jwtUtil = new JwtUtil(clock);
+        AuthTokenResDto tokens = jwtUtil.generateToken("user", RoleType.ROLE_ARTIST);
+
+        final int tokenValidityInSeconds = 24 * 60 * 60;
+
+        Clock expiredClock = Clock.fixed(now.plusSeconds(tokenValidityInSeconds), ZoneId.systemDefault());
+        JwtUtil expiredJwtUtil = new JwtUtil(expiredClock);
+
+        Clock nonExpiredClock = Clock.fixed(now.plusSeconds(tokenValidityInSeconds - 1), ZoneId.systemDefault());
+        JwtUtil nonExpiredJwtUtil = new JwtUtil(nonExpiredClock);
+
+        String token = tokens.refreshToken();
 
         // when
-        clock = Clock.fixed(now.plusSeconds(24 * 60 * 60), ZoneId.systemDefault());
-        JwtUtil expiredJwtUtil = new JwtUtil(clock);
-
-        clock = Clock.fixed(now.plusSeconds((24 * 60 * 60) - 1), ZoneId.systemDefault());
-        JwtUtil nonExpiredJwtUtil = new JwtUtil(clock);
+        boolean jwtResult = jwtUtil.isTokenExpired(token);
+        boolean expiredJwtResult = expiredJwtUtil.isTokenExpired(token);
+        boolean nonExpiredJwtResult = nonExpiredJwtUtil.isTokenExpired(token);
 
         // then
-        assertThat(expiredJwtUtil.isTokenExpired(tokens.refreshToken())).isTrue();
-        assertThat(nonExpiredJwtUtil.isTokenExpired(tokens.refreshToken())).isFalse();
+        assertThat(jwtResult).isFalse();
+        assertThat(expiredJwtResult).isTrue();
+        assertThat(nonExpiredJwtResult).isFalse();
     }
 
     @Test
     @DisplayName("토큰 유효성 검사 테스트")
     void 토큰_유효성_검사_테스트() {
         // given
-        AuthTokenResDto tokens = jwtUtil.generateToken(username, roleType);
+        Clock clock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
+        JwtUtil jwtUtil = new JwtUtil(clock);
+        AuthTokenResDto tokens = jwtUtil.generateToken("user", RoleType.ROLE_ARTIST);
 
         // when
-        boolean isValid = jwtUtil.validateToken(tokens.accessToken(), username);
+        boolean isValid = jwtUtil.validateToken(tokens.accessToken(), "user");
         boolean isInvalid = jwtUtil.validateToken(tokens.accessToken(), "another");
 
         // then
