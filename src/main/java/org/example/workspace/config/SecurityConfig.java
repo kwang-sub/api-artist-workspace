@@ -5,6 +5,7 @@ import org.example.workspace.security.CustomUserDetailsService;
 import org.example.workspace.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -53,6 +54,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers("/api/v1/login").permitAll()
                             .requestMatchers("/api/v1/login-refresh").permitAll()
+                            .requestMatchers(HttpMethod.POST,"/api/v1/users").permitAll()
                                 .anyRequest().authenticated()
                 );
 

@@ -10,7 +10,7 @@ import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
 
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
@@ -21,7 +21,7 @@ public abstract class AbstractAuditingEntity {
 
     @CreatedDate
     @Column(name = "created_date", nullable = false, updatable = false)
-    private ZonedDateTime createdDate;
+    private LocalDateTime createdDate;
 
     @LastModifiedBy
     @Column(name = "last_modified_by", nullable = false)
@@ -29,9 +29,9 @@ public abstract class AbstractAuditingEntity {
 
     @LastModifiedDate
     @Column(name = "last_modified_date", nullable = false)
-    private ZonedDateTime lastModifiedDate;
+    private LocalDateTime lastModifiedDate;
 
     @Column(name = "is_deleted")
     @ColumnDefault("false")
-    private Boolean isDeleted;
+    private Boolean isDeleted = false;
 }
