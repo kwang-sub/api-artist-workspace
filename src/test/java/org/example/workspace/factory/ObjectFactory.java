@@ -1,6 +1,7 @@
 package org.example.workspace.factory;
 
 import org.example.workspace.dto.request.AuthReqDto;
+import org.example.workspace.dto.request.UsersReqDto;
 import org.example.workspace.entity.Role;
 import org.example.workspace.entity.Users;
 import org.example.workspace.entity.code.RoleType;
@@ -13,6 +14,19 @@ public class ObjectFactory {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    public UsersReqDto createUsersReqDto() {
+        return UsersReqDto
+                .builder()
+                .loginId("kwang")
+                .password("!work1234")
+                .confirmPassword("!work1234")
+                .userName("최광섭")
+                .nickname("최광섭")
+                .email("choikwangsub@gmail.com")
+                .phoneNumber("01012341234")
+                .build();
+    }
 
     public Role createRole(RoleType roleType) {
         return Role.builder()
