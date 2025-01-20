@@ -13,15 +13,16 @@ import java.time.ZoneId;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-
 class JwtUtilTest {
+
+    private final String secret = "kwang".repeat(20);
 
     @Test
     @DisplayName("토큰 생성 테스트")
     void 토큰_생성_테스트() {
         // given
         Clock clock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
-        JwtUtil jwtUtil = new JwtUtil(clock);
+        JwtUtil jwtUtil = new JwtUtil(clock, secret);
 
         // when
         AuthTokenResDto tokens = jwtUtil.generateSignInToken("user", RoleType.ROLE_ARTIST);
@@ -40,7 +41,7 @@ class JwtUtilTest {
     void 사용자_이름_추출_테스트() {
         // given
         Clock clock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
-        JwtUtil jwtUtil = new JwtUtil(clock);
+        JwtUtil jwtUtil = new JwtUtil(clock, secret);
         AuthTokenResDto tokens = jwtUtil.generateSignInToken("user", RoleType.ROLE_ARTIST);
 
         // when
@@ -55,7 +56,7 @@ class JwtUtilTest {
     void 사용자_역할_추출_테스트() {
         // given
         Clock clock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
-        JwtUtil jwtUtil = new JwtUtil(clock);
+        JwtUtil jwtUtil = new JwtUtil(clock, secret);
         AuthTokenResDto tokens = jwtUtil.generateSignInToken("user", RoleType.ROLE_ARTIST);
 
         // when
@@ -71,16 +72,16 @@ class JwtUtilTest {
         // given
         Instant now = Instant.now();
         Clock clock = Clock.fixed(now, ZoneId.systemDefault());
-        JwtUtil jwtUtil = new JwtUtil(clock);
+        JwtUtil jwtUtil = new JwtUtil(clock, secret);
         AuthTokenResDto tokens = jwtUtil.generateSignInToken("user", RoleType.ROLE_ARTIST);
 
         final int tokenValidityInSeconds = 5 * 60;
 
         Clock expiredClock = Clock.fixed(now.plusSeconds(tokenValidityInSeconds), ZoneId.systemDefault());
-        JwtUtil expiredJwtUtil = new JwtUtil(expiredClock);
+        JwtUtil expiredJwtUtil = new JwtUtil(expiredClock, secret);
 
         Clock nonExpiredClock = Clock.fixed(now.plusSeconds(tokenValidityInSeconds - 1), ZoneId.systemDefault());
-        JwtUtil nonExpiredJwtUtil = new JwtUtil(nonExpiredClock);
+        JwtUtil nonExpiredJwtUtil = new JwtUtil(nonExpiredClock, secret);
 
         String token = tokens.accessToken();
 
@@ -101,16 +102,16 @@ class JwtUtilTest {
         // given
         Instant now = Instant.now();
         Clock clock = Clock.fixed(now, ZoneId.systemDefault());
-        JwtUtil jwtUtil = new JwtUtil(clock);
+        JwtUtil jwtUtil = new JwtUtil(clock, secret);
         AuthTokenResDto tokens = jwtUtil.generateSignInToken("user", RoleType.ROLE_ARTIST);
 
         final int tokenValidityInSeconds = 24 * 60 * 60;
 
         Clock expiredClock = Clock.fixed(now.plusSeconds(tokenValidityInSeconds), ZoneId.systemDefault());
-        JwtUtil expiredJwtUtil = new JwtUtil(expiredClock);
+        JwtUtil expiredJwtUtil = new JwtUtil(expiredClock, secret);
 
         Clock nonExpiredClock = Clock.fixed(now.plusSeconds(tokenValidityInSeconds - 1), ZoneId.systemDefault());
-        JwtUtil nonExpiredJwtUtil = new JwtUtil(nonExpiredClock);
+        JwtUtil nonExpiredJwtUtil = new JwtUtil(nonExpiredClock, secret);
 
         String token = tokens.refreshToken();
 
@@ -130,7 +131,7 @@ class JwtUtilTest {
     void 토큰_유효성_검사_테스트() {
         // given
         Clock clock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
-        JwtUtil jwtUtil = new JwtUtil(clock);
+        JwtUtil jwtUtil = new JwtUtil(clock, secret);
         AuthTokenResDto tokens = jwtUtil.generateSignInToken("user", RoleType.ROLE_ARTIST);
 
         // when

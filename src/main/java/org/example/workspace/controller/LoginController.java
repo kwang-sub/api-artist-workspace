@@ -6,7 +6,6 @@ import org.example.workspace.dto.request.TokenRefreshReqDto;
 import org.example.workspace.dto.response.AuthTokenResDto;
 import org.example.workspace.entity.code.RoleType;
 import org.example.workspace.security.CustomUserDetails;
-import org.example.workspace.service.UserService;
 import org.example.workspace.util.JwtUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -15,7 +14,10 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -24,7 +26,6 @@ public class LoginController {
 
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
-    private final UserService userService;
 
     @PostMapping("/login")
     public ResponseEntity<AuthTokenResDto> login(@RequestBody @Validated AuthReqDto authReqDto) {
@@ -52,12 +53,6 @@ public class LoginController {
         AuthTokenResDto authTokenResDto = jwtUtil.generateSignInToken(username, roleType);
 
         return ResponseEntity.ok(authTokenResDto);
-    }
-
-    @GetMapping("/verify")
-    public ResponseEntity<Boolean> verify(@RequestParam String token) {
-
-        return ResponseEntity.ok(userService.emailVerify(token));
     }
 
 }

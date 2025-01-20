@@ -26,6 +26,10 @@ public final class ApplicationConstant {
     public static final class Jwt {
         public static final String CLAIMS_KEY_ROLE = "role";
         public static final String CLAIMS_KEY_ID = "id";
+
+        public static final long ACCESS_TOKEN_EXPIRATION_MS = 5 * 60 * 1000;
+        public static final long REFRESH_TOKEN_EXPIRATION_MS = 24 * 60 * 60 * 1000;
+        public static final long EMAIL_VERIFY_TOKEN_EXPIRATION_MS = 60 * 60 * 1000;
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)

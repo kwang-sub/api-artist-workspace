@@ -89,4 +89,8 @@ public class Users extends AbstractAuditingEntity {
     public void addSns(UsersSns usersSns) {
         this.userSnsList.add(usersSns);
     }
+
+    public void isVerified() {
+        this.isActivated = true;
+    }
 }
