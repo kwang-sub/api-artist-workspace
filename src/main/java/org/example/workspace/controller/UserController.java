@@ -30,4 +30,9 @@ public class UserController {
         // TODO 응답 url 확인 필요
         return ResponseEntity.created(URI.create("d")).body(body);
     }
+
+    @GetMapping("/verify")
+    public ResponseEntity<Boolean> verify(@RequestParam String token) {
+        return ResponseEntity.ok(service.emailVerify(token));
+    }
 }

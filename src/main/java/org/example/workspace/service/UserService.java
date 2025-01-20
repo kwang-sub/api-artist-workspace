@@ -6,10 +6,7 @@ import org.example.workspace.dto.response.UsersResDto;
 import org.example.workspace.entity.Role;
 import org.example.workspace.entity.Users;
 import org.example.workspace.entity.code.RoleType;
-import org.example.workspace.exception.EntityNotFoundException;
-import org.example.workspace.exception.ExistsEmailException;
-import org.example.workspace.exception.ExistsLoginIdException;
-import org.example.workspace.exception.InvalidPasswordException;
+import org.example.workspace.exception.*;
 import org.example.workspace.mapper.UserMapper;
 import org.example.workspace.repository.RoleRepository;
 import org.example.workspace.repository.UsersRepository;
@@ -82,6 +79,17 @@ public class UserService {
     }
 
     public Boolean emailVerify(String token) {
-        return null;
+        if (jwtUtil.isTokenExpired(token))
+            throw new InvalidTokenException();
+        Long userId = jwtUtil.extractId(token);
+        String userEmail = jwtUtil.extractSubject(token);
+
+        Users user = usersRepository.findByIdAndEmailAndIsDeletedFalse(userId, userEmail)
+                .orElseThrow(() -> new EntityNotFoundException(Users.class, userId));
+
+        user.isVerified();
+        usersRepository.save(user);
+
+        return true;
     }
 }
