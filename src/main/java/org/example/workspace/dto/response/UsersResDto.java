@@ -9,6 +9,7 @@ public record UsersResDto(
         String nickname,
         String email,
         String phoneNumber,
-        List<String> snsList
+        Boolean isActivated,
+        List<UserSnsResDto> userSnsList
 ) {
 }

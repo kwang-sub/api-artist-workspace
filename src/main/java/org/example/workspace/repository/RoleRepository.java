@@ -1,7 +1,6 @@
 package org.example.workspace.repository;
 
 import org.example.workspace.entity.Role;
-import org.example.workspace.entity.Users;
 import org.example.workspace.entity.code.RoleType;
 import org.springframework.data.jpa.repository.JpaRepository;
 

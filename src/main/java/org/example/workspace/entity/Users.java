@@ -5,6 +5,8 @@ import lombok.*;
 import org.example.workspace.common.ApplicationConstant;
 import org.example.workspace.dto.request.UsersReqDto;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -49,14 +51,18 @@ public class Users extends AbstractAuditingEntity {
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;
 
+    @OneToMany(mappedBy = "users")
+    @Builder.Default
+    private List<UsersSns> userSnsList = new ArrayList<>();
+
     public static Users create(UsersReqDto dto, String encodePassword, Role role) {
         return Users.builder()
-                .loginId(dto.getLoginId())
+                .loginId(dto.loginId())
                 .password(encodePassword)
-                .userName(dto.getUserName())
-                .nickname(dto.getNickname())
-                .email(dto.getEmail())
-                .phoneNumber(dto.getPhoneNumber())
+                .userName(dto.userName())
+                .nickname(dto.nickname())
+                .email(dto.email())
+                .phoneNumber(dto.phoneNumber())
                 .isActivated(false)
                 .isUseTempPassword(false)
                 .role(role)
@@ -72,5 +78,9 @@ public class Users extends AbstractAuditingEntity {
     @Override
     public int hashCode() {
         return Objects.hashCode(id);
+    }
+
+    public void addSns(UsersSns usersSns) {
+        this.userSnsList.add(usersSns);
     }
 }

@@ -4,6 +4,6 @@ import org.example.workspace.dto.response.UsersResDto;
 import org.example.workspace.entity.Users;
 import org.mapstruct.Mapper;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {UserSnsMapper.class})
 public interface UserMapper extends BaseMapper<Users, UsersResDto> {
 }

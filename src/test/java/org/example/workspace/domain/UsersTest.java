@@ -5,6 +5,7 @@ import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
 import org.example.workspace.common.ApplicationConstant;
 import org.example.workspace.dto.request.UsersReqDto;
+import org.example.workspace.dto.request.UsersSnsReqDto;
 import org.example.workspace.dto.response.FieldErrorResDto;
 import org.example.workspace.dto.response.UsersResDto;
 import org.example.workspace.entity.Users;
@@ -71,12 +72,13 @@ public class UsersTest {
 
         SoftAssertions softAssertions = new SoftAssertions();
         softAssertions.assertThat(response).isNotNull();
-        softAssertions.assertThat(response.loginId()).isEqualTo(usersReqDto.getLoginId());
-        softAssertions.assertThat(response.userName()).isEqualTo(usersReqDto.getUserName());
-        softAssertions.assertThat(response.nickname()).isEqualTo(usersReqDto.getNickname());
-        softAssertions.assertThat(response.email()).isEqualTo(usersReqDto.getEmail());
-        softAssertions.assertThat(response.phoneNumber()).isEqualTo(usersReqDto.getPhoneNumber());
-        softAssertions.assertThat(response.snsList()).isNotEmpty();
+        softAssertions.assertThat(response.loginId()).isEqualTo(usersReqDto.loginId());
+        softAssertions.assertThat(response.userName()).isEqualTo(usersReqDto.userName());
+        softAssertions.assertThat(response.nickname()).isEqualTo(usersReqDto.nickname());
+        softAssertions.assertThat(response.email()).isEqualTo(usersReqDto.email());
+        softAssertions.assertThat(response.phoneNumber()).isEqualTo(usersReqDto.phoneNumber());
+        softAssertions.assertThat(response.isActivated()).isFalse();
+        softAssertions.assertThat(response.userSnsList()).isNotEmpty();
         softAssertions.assertAll();
     }
 
@@ -128,15 +130,17 @@ public class UsersTest {
         int nowCount = repetitionInfo.getCurrentRepetition() - 1;
 
         String invalidPassword = requestParameterFactory.createInvalidPassword(nowCount, totalCount);
-        UsersReqDto usersReqDto = new UsersReqDto(
-                requestParameterFactory.createInvalidLoginId(nowCount, totalCount),
-                invalidPassword,
-                invalidPassword,
-                requestParameterFactory.createInvalidLengthString(nowCount, totalCount, 101),
-                requestParameterFactory.createInvalidLengthString(nowCount, totalCount, 101),
-                requestParameterFactory.createInvalidEmail(nowCount, totalCount),
-                requestParameterFactory.createInvalidPhoneNumber(nowCount, totalCount)
-        );
+        UsersReqDto usersReqDto = UsersReqDto
+                .builder()
+                .loginId(requestParameterFactory.createInvalidLoginId(nowCount, totalCount))
+                .password(invalidPassword)
+                .confirmPassword(invalidPassword)
+                .userName(requestParameterFactory.createInvalidLengthString(nowCount, totalCount, 101))
+                .nickname(requestParameterFactory.createInvalidLengthString(nowCount, totalCount, 101))
+                .email(requestParameterFactory.createInvalidEmail(nowCount, totalCount))
+                .phoneNumber(requestParameterFactory.createInvalidPhoneNumber(nowCount, totalCount))
+                .userSnsList(List.of(UsersSnsReqDto.builder().build()))
+                .build();
 
         // when
         MvcResult sut = mvc.perform(post("/api/v1/users")
@@ -164,7 +168,9 @@ public class UsersTest {
                         "userName",
                         "nickname",
                         "email",
-                        "phoneNumber"
+                        "phoneNumber",
+                        "userSnsList[0].snsType",
+                        "userSnsList[0].snsUsername"
                 );
 
         softAssertions.assertAll();
@@ -174,15 +180,15 @@ public class UsersTest {
     @DisplayName("패스워드와확인패스워드불일치하면안된다")
     void 패스워드와_확인패스워드_불일치하면_안된다() throws Exception {
         // given
-        UsersReqDto usersReqDto = new UsersReqDto(
-                "kwang",
-                "!work1234",
-                "!!work1234",
-                "최광섭",
-                "최광섭",
-                "choikwangsub@gmail.com",
-                "01012341234"
-        );
+        UsersReqDto usersReqDto = UsersReqDto.builder()
+                .loginId("kwang")
+                .password("!work1234")
+                .confirmPassword("!!work1234")
+                .userName("최광섭")
+                .nickname("최광섭")
+                .email("test@gmail.com")
+                .phoneNumber("01012341234")
+                .build();
 
         // when
         MvcResult sut = mvc.perform(post("/api/v1/users")
@@ -216,12 +222,12 @@ public class UsersTest {
                 .andExpect(status().isCreated());
 
         // then
-        Users user = usersRepository.findByLoginIdAndIsDeletedFalse(usersReqDto.getLoginId())
+        Users users = usersRepository.findByLoginIdAndIsDeletedFalse(usersReqDto.loginId())
                 .orElse(null);
 
         SoftAssertions softAssertions = new SoftAssertions();
-        softAssertions.assertThat(user).isNotNull();
-        softAssertions.assertThat(passwordEncoder.matches(usersReqDto.getPassword(), user.getPassword())).isTrue();
+        softAssertions.assertThat(users).isNotNull();
+        softAssertions.assertThat(passwordEncoder.matches(usersReqDto.password(), users.getPassword())).isTrue();
         softAssertions.assertAll();
     }
 
@@ -255,13 +261,40 @@ public class UsersTest {
     }
 
     @Test
-    void 이메일이_같은_유저는_생성_안된다() {
-        Assertions.fail();
-    }
+    void 이메일이_같은_유저는_생성_안된다() throws Exception {
+        // given
+        UsersReqDto usersReqDto = objectFactory.createUsersReqDto();
+        mvc.perform(post("/api/v1/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(usersReqDto))
+                )
+                .andExpect(status().isCreated());
+        UsersReqDto duplicateEmailUser = UsersReqDto.builder()
+                .loginId("newuser")
+                .password("!work1234")
+                .confirmPassword("!work1234")
+                .userName("newuser")
+                .nickname("newuser")
+                .email(usersReqDto.email())
+                .phoneNumber("01012341234")
+                .build();
 
-    @Test
-    void 회원가입시_비활성화_상태로_생성되어야한다() {
-        Assertions.fail();
+        // when
+        MvcResult mvcResult = mvc.perform(post("/api/v1/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(duplicateEmailUser))
+                )
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        // then
+        String responseString = mvcResult.getResponse().getContentAsString();
+        ProblemDetail response = objectMapper.readValue(responseString, ProblemDetail.class);
+
+        SoftAssertions softAssertions = new SoftAssertions();
+        softAssertions.assertThat(response).isNotNull();
+        softAssertions.assertThat(response.getDetail()).isEqualTo("이미 등록된 이메일입니다.");
+        softAssertions.assertAll();
     }
 
     @Test

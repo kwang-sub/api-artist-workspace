@@ -27,6 +27,7 @@ public class UserController {
     @PostMapping
     public ResponseEntity<UsersResDto> createUser(@RequestBody @Validated UsersReqDto dto) {
         UsersResDto body = service.create(dto);
+        // TODO 응답 url 확인 필요
         return ResponseEntity.created(URI.create("d")).body(body);
     }
 }
