@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.workspace.common.ApplicationConstant;
 import org.example.workspace.dto.response.AuthTokenResDto;
 import org.example.workspace.entity.code.RoleType;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
@@ -22,47 +23,56 @@ public class JwtUtil {
 
     private final Clock clock;
 
-    // TODO 토큰 정보 설정 필요
+    @Value("${jwt.secret}")
+    private String secret;
 
-    //    @Value("${jwt.secret}")
-    private String secret = "testdsgafdsghbnfaidbnmoiterjpnhqihtnjpiunsdafgpiuafndhgipuadnfghiuapnfbinrtghqeiouhniadsgfadfbtqh";
+    private final long accessTokenExpirationMs = 5 * 60 * 1000;
 
-    private final long jwtExpirationMs = 5 * 60 * 1000;
-
-    private final long refreshExpirationMs = 24 * 60 * 60 * 1000;
+    private final long refreshTokenExpirationMs = 24 * 60 * 60 * 1000;
+    private final long emailVerifyTokenExpirationMs = 60 * 60 * 1000;
 
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(secret.getBytes());
     }
 
-    public AuthTokenResDto generateToken(String username, RoleType roleType) {
+    public AuthTokenResDto generateSignInToken(String username, RoleType roleType) {
         String accessToken = this.generateAccessToken(username, roleType);
         String refreshToken = this.generateRefreshToken(username, roleType);
         return new AuthTokenResDto(accessToken, refreshToken);
     }
 
     private String generateAccessToken(String username, RoleType roleType) {
-        return generateToken(username, roleType, jwtExpirationMs);
+        return generateSignInToken(username, roleType, accessTokenExpirationMs);
     }
 
     private String generateRefreshToken(String username, RoleType roleType) {
-        return generateToken(username, roleType, refreshExpirationMs);
+        return generateSignInToken(username, roleType, refreshTokenExpirationMs);
     }
 
-    private String generateToken(String username, RoleType roleType, long expiration) {
-        Instant now = Instant.now(clock);
+    private String generateSignInToken(String username, RoleType roleType, long expiration) {
         Map<String, Object> claims = new HashMap<>();
         claims.put(ApplicationConstant.Jwt.CLAIMS_KEY_ROLE, roleType.name());
+        return generateToken(username, expiration, claims);
+    }
+
+    public String generateEmailVerifyToken(String email, Long userId) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put(ApplicationConstant.Jwt.CLAIMS_KEY_ID, userId);
+        return generateToken(email, emailVerifyTokenExpirationMs, claims);
+    }
+
+    private String generateToken(String subject, long expiration, Map<String, Object> claims) {
+        Instant now = Instant.now(clock);
         return Jwts.builder()
                 .setClaims(claims)
-                .setSubject(username)
+                .setSubject(subject)
                 .setIssuedAt(Date.from(now))
                 .setExpiration(Date.from(now.plusMillis(expiration)))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS512)
                 .compact();
     }
 
-    public String extractUsername(String token) {
+    public String extractSubject(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
@@ -96,7 +106,7 @@ public class JwtUtil {
     }
 
     public boolean validateToken(String token, String username) {
-        final String extractedUsername = extractUsername(token);
+        final String extractedUsername = extractSubject(token);
         return (extractedUsername.equals(username) && !isTokenExpired(token));
     }
 }

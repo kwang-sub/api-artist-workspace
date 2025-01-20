@@ -1,7 +1,6 @@
 package org.example.workspace.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,16 +23,13 @@ public class UsersSns extends AbstractAuditingEntity {
 
 
     @Enumerated(EnumType.STRING)
-    @NotNull
     @Column(name = "sns_type", nullable = false, length = ApplicationConstant.Entity.MAX_LENGTH_TEXT_SMALL)
     private SnsType snsType;
 
-    @NotNull
     @Column(name = "sns_username", nullable = false, length = ApplicationConstant.Entity.MAX_LENGTH_TEXT_SMALL)
     private String snsUsername;
 
 
-    @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private Users users;

@@ -1,7 +1,10 @@
 package org.example.workspace.factory;
 
+import org.springframework.boot.test.context.TestComponent;
+
 import java.util.List;
 
+@TestComponent
 public class RequestParameterFactory {
 
     public String createInvalidLoginId(int nowCount, int totalCount) {

@@ -1,7 +1,8 @@
-package org.example.workspace.domain;
+package org.example.workspace.integration.domain.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.assertj.core.api.Assertions;
+import jakarta.mail.Session;
+import jakarta.mail.internet.MimeMessage;
 import org.assertj.core.api.SoftAssertions;
 import org.example.workspace.common.ApplicationConstant;
 import org.example.workspace.dto.request.UsersReqDto;
@@ -19,10 +20,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,14 +33,15 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Objects;
 
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @Transactional
-@Import(value = {ObjectFactory.class, RequestParameterFactory.class})
+@ComponentScan(basePackages = "org.example.workspace")
 @AutoConfigureMockMvc
-public class UsersTest {
+public class UsersSignupTest {
 
     @Autowired
     private MockMvc mvc;
@@ -52,14 +56,21 @@ public class UsersTest {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @MockitoBean
+    private JavaMailSender mockMailSender;
+
+    private final String URL = "/api/v1/users";
+
     @Test
     @DisplayName("유저생성이가능하다")
     void 유저_생성이_가능하다() throws Exception {
         // given
+        when(mockMailSender.createMimeMessage()).thenReturn(new MimeMessage((Session) null));
         UsersReqDto usersReqDto = objectFactory.createUsersReqDto();
 
         // when
-        MvcResult sut = mvc.perform(post("/api/v1/users")
+
+        MvcResult sut = mvc.perform(post(URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(usersReqDto))
                 )
@@ -90,7 +101,7 @@ public class UsersTest {
                 .build();
 
         // when
-        MvcResult sut = mvc.perform(post("/api/v1/users")
+        MvcResult sut = mvc.perform(post(URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsBytes(usersReqDto))
                 )
@@ -115,6 +126,7 @@ public class UsersTest {
                         "confirmPassword",
                         "userName",
                         "nickname",
+                        "workspaceName",
                         "email",
                         "phoneNumber"
                 );
@@ -137,13 +149,14 @@ public class UsersTest {
                 .confirmPassword(invalidPassword)
                 .userName(requestParameterFactory.createInvalidLengthString(nowCount, totalCount, 101))
                 .nickname(requestParameterFactory.createInvalidLengthString(nowCount, totalCount, 101))
+                .workspaceName(requestParameterFactory.createInvalidLengthString(nowCount, totalCount, 101))
                 .email(requestParameterFactory.createInvalidEmail(nowCount, totalCount))
                 .phoneNumber(requestParameterFactory.createInvalidPhoneNumber(nowCount, totalCount))
                 .userSnsList(List.of(UsersSnsReqDto.builder().build()))
                 .build();
 
         // when
-        MvcResult sut = mvc.perform(post("/api/v1/users")
+        MvcResult sut = mvc.perform(post(URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsBytes(usersReqDto))
                 )
@@ -167,6 +180,7 @@ public class UsersTest {
                         "confirmPassword",
                         "userName",
                         "nickname",
+                        "workspaceName",
                         "email",
                         "phoneNumber",
                         "userSnsList[0].snsType",
@@ -186,12 +200,13 @@ public class UsersTest {
                 .confirmPassword("!!work1234")
                 .userName("최광섭")
                 .nickname("최광섭")
+                .workspaceName("최광섭")
                 .email("test@gmail.com")
                 .phoneNumber("01012341234")
                 .build();
 
         // when
-        MvcResult sut = mvc.perform(post("/api/v1/users")
+        MvcResult sut = mvc.perform(post(URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsBytes(usersReqDto))
                 )
@@ -212,10 +227,11 @@ public class UsersTest {
     @DisplayName("유저비밀번호는암호화되어야한다")
     void 유저비밀번호는_암호화_되어야한다() throws Exception {
         // given
+        when(mockMailSender.createMimeMessage()).thenReturn(new MimeMessage((Session) null));
         UsersReqDto usersReqDto = objectFactory.createUsersReqDto();
 
         // when
-         mvc.perform(post("/api/v1/users")
+        mvc.perform(post(URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsBytes(usersReqDto))
                 )
@@ -235,15 +251,16 @@ public class UsersTest {
     @DisplayName("아이디가같은유저는생성안된다")
     void 아이디가_같은_유저는_생성_안된다() throws Exception {
         // given
+        when(mockMailSender.createMimeMessage()).thenReturn(new MimeMessage((Session) null));
         UsersReqDto usersReqDto = objectFactory.createUsersReqDto();
-        mvc.perform(post("/api/v1/users")
+        mvc.perform(post(URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(usersReqDto))
                 )
                 .andExpect(status().isCreated());
 
         // when
-        MvcResult mvcResult = mvc.perform(post("/api/v1/users")
+        MvcResult mvcResult = mvc.perform(post(URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(usersReqDto))
                 )
@@ -263,8 +280,9 @@ public class UsersTest {
     @Test
     void 이메일이_같은_유저는_생성_안된다() throws Exception {
         // given
+        when(mockMailSender.createMimeMessage()).thenReturn(new MimeMessage((Session) null));
         UsersReqDto usersReqDto = objectFactory.createUsersReqDto();
-        mvc.perform(post("/api/v1/users")
+        mvc.perform(post(URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(usersReqDto))
                 )
@@ -275,12 +293,13 @@ public class UsersTest {
                 .confirmPassword("!work1234")
                 .userName("newuser")
                 .nickname("newuser")
+                .workspaceName("newuser")
                 .email(usersReqDto.email())
                 .phoneNumber("01012341234")
                 .build();
 
         // when
-        MvcResult mvcResult = mvc.perform(post("/api/v1/users")
+        MvcResult mvcResult = mvc.perform(post(URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(duplicateEmailUser))
                 )
@@ -298,7 +317,19 @@ public class UsersTest {
     }
 
     @Test
-    void 회원가입시_이메일인증_메일이_발송된다() {
-        Assertions.fail();
+    void 회원가입시_이메일인증_메일이_발송된다() throws Exception {
+        // given
+        UsersReqDto usersReqDto = objectFactory.createUsersReqDto();
+        when(mockMailSender.createMimeMessage()).thenReturn(new MimeMessage((Session) null));
+
+        // when
+        mvc.perform(post(URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(usersReqDto))
+                )
+                .andExpect(status().isCreated());
+
+        // then
+        verify(mockMailSender, times(1)).send((MimeMessage) any());
     }
 }

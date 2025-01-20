@@ -14,3 +14,5 @@ logging:
     com:
       example:
         workspace: debug
+app:
+  domain: http://localhost:8080

@@ -1,4 +1,4 @@
-package org.example.workspace.security;
+package org.example.workspace.integration.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.assertj.core.api.SoftAssertions;
@@ -6,6 +6,7 @@ import org.example.workspace.dto.request.AuthReqDto;
 import org.example.workspace.dto.request.TokenRefreshReqDto;
 import org.example.workspace.entity.code.RoleType;
 import org.example.workspace.factory.ObjectFactory;
+import org.example.workspace.security.CustomUserDetailsService;
 import org.example.workspace.util.JwtUtil;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -110,7 +111,7 @@ public class SecurityTest {
         SoftAssertions softAssertions = new SoftAssertions();
         softAssertions.assertThat(accessToken).isNotNull();
         softAssertions.assertThat(jwtUtil.isTokenExpired(accessToken)).isFalse();
-        softAssertions.assertThat(jwtUtil.extractUsername(accessToken)).isEqualTo(authReqDto.username());
+        softAssertions.assertThat(jwtUtil.extractSubject(accessToken)).isEqualTo(authReqDto.username());
         softAssertions.assertThat(jwtUtil.extractRole(accessToken)).isEqualTo(RoleType.ROLE_ARTIST);
         softAssertions.assertThat(refreshToken).isNotNull();
         softAssertions.assertThat(jwtUtil.isTokenExpired(refreshToken)).isFalse();
@@ -124,7 +125,7 @@ public class SecurityTest {
         // given
         final String username = "user";
         final RoleType roleType = RoleType.ROLE_ARTIST;
-        String refreshToken = jwtUtil.generateToken(username, roleType).refreshToken();
+        String refreshToken = jwtUtil.generateSignInToken(username, roleType).refreshToken();
         TokenRefreshReqDto tokenRefreshReqDto = new TokenRefreshReqDto(refreshToken);
 
         // when
@@ -143,7 +144,7 @@ public class SecurityTest {
         SoftAssertions softAssertions = new SoftAssertions();
         softAssertions.assertThat(newAccessToken).isNotNull();
         softAssertions.assertThat(jwtUtil.isTokenExpired(newAccessToken)).isFalse();
-        softAssertions.assertThat(jwtUtil.extractUsername(newAccessToken)).isEqualTo(username);
+        softAssertions.assertThat(jwtUtil.extractSubject(newAccessToken)).isEqualTo(username);
         softAssertions.assertThat(jwtUtil.extractRole(newAccessToken)).isEqualTo(roleType);
         softAssertions.assertThat(newRefreshToken).isNotNull();
         softAssertions.assertThat(jwtUtil.isTokenExpired(newRefreshToken)).isFalse();

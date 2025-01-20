@@ -25,21 +25,26 @@ public class Users extends AbstractAuditingEntity {
     @Column(name = "login_id", nullable = false, length = ApplicationConstant.Entity.MAX_LENGTH_TEXT_SMALL)
     private String loginId;
 
-    @Column(name = "password", nullable = false, length = ApplicationConstant.Entity.MAX_LENGTH_TEXT_NORMAL)
+    @Column(name = "password", nullable = false, length = ApplicationConstant.Entity.MAX_LENGTH_TEXT_SMALL)
     private String password;
 
-    @Column(name = "user_name", nullable = false, length = ApplicationConstant.Entity.MAX_LENGTH_TEXT_SMALL)
+    @Column(name = "user_name", nullable = false)
     private String userName;
 
-    @Column(name = "nickname", nullable = false, length = ApplicationConstant.Entity.MAX_LENGTH_TEXT_NORMAL)
+    @Column(name = "nickname", nullable = false)
     private String nickname;
+
+    @Column(name = "workspace_name", nullable = false, length = ApplicationConstant.Entity.MAX_LENGTH_TEXT_SMALL)
+    private String workspaceName;
 
     @Column(name = "email", nullable = false, length = ApplicationConstant.Entity.MAX_LENGTH_TEXT_SMALL)
     private String email;
 
-
     @Column(name = "phone_number", nullable = false, length = ApplicationConstant.Entity.MAX_LENGTH_TEXT_SMALL)
     private String phoneNumber;
+
+    @Column(name = "bio", length = ApplicationConstant.Entity.MAX_LENGTH_TEXT_SMALL)
+    private String bio;
 
     @Column(name = "is_activated", nullable = false)
     private Boolean isActivated;
@@ -61,6 +66,7 @@ public class Users extends AbstractAuditingEntity {
                 .password(encodePassword)
                 .userName(dto.userName())
                 .nickname(dto.nickname())
+                .workspaceName(dto.workspaceName())
                 .email(dto.email())
                 .phoneNumber(dto.phoneNumber())
                 .isActivated(false)

@@ -8,6 +8,11 @@ import lombok.NoArgsConstructor;
 public final class ApplicationConstant {
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    public static final class Email{
+        public static final String SIGNUP_CONFIRM_TITLE = "[Artist Workspace] 신규 가입을 환영합니다! 이메일 인증을 완료해주세요.";
+    }
+
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static final class Entity {
         public static final int MAX_LENGTH_TEXT_SMALL = 100;
         public static final int MAX_LENGTH_TEXT_NORMAL = 255;
@@ -20,6 +25,7 @@ public final class ApplicationConstant {
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static final class Jwt {
         public static final String CLAIMS_KEY_ROLE = "role";
+        public static final String CLAIMS_KEY_ID = "id";
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)

@@ -9,6 +9,7 @@ import lombok.Builder;
 
 import java.util.List;
 
+
 @Builder
 public record UsersReqDto(
         @NotBlank
@@ -30,6 +31,10 @@ public record UsersReqDto(
         @NotBlank
         @Size(min = 2, max = 100)
         String nickname,
+
+        @NotBlank
+        @Size(min = 2, max = 100)
+        String workspaceName,
 
         @NotBlank
         @Email

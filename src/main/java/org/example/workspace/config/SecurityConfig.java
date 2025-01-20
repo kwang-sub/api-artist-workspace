@@ -52,9 +52,10 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
                 .authorizeHttpRequests(auth ->
-                        auth.requestMatchers("/api/v1/login").permitAll()
-                            .requestMatchers("/api/v1/login-refresh").permitAll()
+                        auth.requestMatchers(HttpMethod.POST,"/api/v1/login").permitAll()
+                            .requestMatchers(HttpMethod.POST,"/api/v1/login-refresh").permitAll()
                             .requestMatchers(HttpMethod.POST,"/api/v1/users").permitAll()
+                            .requestMatchers(HttpMethod.GET,"/api/v1/users/verify").permitAll()
                                 .anyRequest().authenticated()
                 );
 

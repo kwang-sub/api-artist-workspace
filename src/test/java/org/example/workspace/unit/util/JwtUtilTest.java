@@ -1,8 +1,9 @@
-package org.example.workspace.util;
+package org.example.workspace.unit.util;
 
 import org.assertj.core.api.SoftAssertions;
 import org.example.workspace.dto.response.AuthTokenResDto;
 import org.example.workspace.entity.code.RoleType;
+import org.example.workspace.util.JwtUtil;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -23,7 +24,7 @@ class JwtUtilTest {
         JwtUtil jwtUtil = new JwtUtil(clock);
 
         // when
-        AuthTokenResDto tokens = jwtUtil.generateToken("user", RoleType.ROLE_ARTIST);
+        AuthTokenResDto tokens = jwtUtil.generateSignInToken("user", RoleType.ROLE_ARTIST);
 
         // then
         SoftAssertions softAssertions = new SoftAssertions();
@@ -40,10 +41,10 @@ class JwtUtilTest {
         // given
         Clock clock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
         JwtUtil jwtUtil = new JwtUtil(clock);
-        AuthTokenResDto tokens = jwtUtil.generateToken("user", RoleType.ROLE_ARTIST);
+        AuthTokenResDto tokens = jwtUtil.generateSignInToken("user", RoleType.ROLE_ARTIST);
 
         // when
-        String extractedUsername = jwtUtil.extractUsername(tokens.accessToken());
+        String extractedUsername = jwtUtil.extractSubject(tokens.accessToken());
 
         // then
         assertThat(extractedUsername).isEqualTo("user");
@@ -55,7 +56,7 @@ class JwtUtilTest {
         // given
         Clock clock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
         JwtUtil jwtUtil = new JwtUtil(clock);
-        AuthTokenResDto tokens = jwtUtil.generateToken("user", RoleType.ROLE_ARTIST);
+        AuthTokenResDto tokens = jwtUtil.generateSignInToken("user", RoleType.ROLE_ARTIST);
 
         // when
         RoleType extractedRole = jwtUtil.extractRole(tokens.accessToken());
@@ -71,7 +72,7 @@ class JwtUtilTest {
         Instant now = Instant.now();
         Clock clock = Clock.fixed(now, ZoneId.systemDefault());
         JwtUtil jwtUtil = new JwtUtil(clock);
-        AuthTokenResDto tokens = jwtUtil.generateToken("user", RoleType.ROLE_ARTIST);
+        AuthTokenResDto tokens = jwtUtil.generateSignInToken("user", RoleType.ROLE_ARTIST);
 
         final int tokenValidityInSeconds = 5 * 60;
 
@@ -101,7 +102,7 @@ class JwtUtilTest {
         Instant now = Instant.now();
         Clock clock = Clock.fixed(now, ZoneId.systemDefault());
         JwtUtil jwtUtil = new JwtUtil(clock);
-        AuthTokenResDto tokens = jwtUtil.generateToken("user", RoleType.ROLE_ARTIST);
+        AuthTokenResDto tokens = jwtUtil.generateSignInToken("user", RoleType.ROLE_ARTIST);
 
         final int tokenValidityInSeconds = 24 * 60 * 60;
 
@@ -130,7 +131,7 @@ class JwtUtilTest {
         // given
         Clock clock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
         JwtUtil jwtUtil = new JwtUtil(clock);
-        AuthTokenResDto tokens = jwtUtil.generateToken("user", RoleType.ROLE_ARTIST);
+        AuthTokenResDto tokens = jwtUtil.generateSignInToken("user", RoleType.ROLE_ARTIST);
 
         // when
         boolean isValid = jwtUtil.validateToken(tokens.accessToken(), "user");
