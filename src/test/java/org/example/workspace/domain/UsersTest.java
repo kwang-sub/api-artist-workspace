@@ -1,6 +1,7 @@
 package org.example.workspace.domain;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
 import org.example.workspace.common.ApplicationConstant;
 import org.example.workspace.dto.request.UsersReqDto;
@@ -23,6 +24,7 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
@@ -31,6 +33,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
+@Transactional
 @Import(value = {ObjectFactory.class, RequestParameterFactory.class})
 @AutoConfigureMockMvc
 public class UsersTest {
@@ -49,8 +52,8 @@ public class UsersTest {
     private PasswordEncoder passwordEncoder;
 
     @Test
-    @DisplayName("유저 생성 테스트")
-    public void 유저_생성_테스트() throws Exception {
+    @DisplayName("유저생성이가능하다")
+    void 유저_생성이_가능하다() throws Exception {
         // given
         UsersReqDto usersReqDto = objectFactory.createUsersReqDto();
 
@@ -62,10 +65,10 @@ public class UsersTest {
                 .andExpect(status().isCreated())
                 .andReturn();
 
+        // then
         String responseString = sut.getResponse().getContentAsString();
         UsersResDto response = objectMapper.readValue(responseString, UsersResDto.class);
 
-        // then
         SoftAssertions softAssertions = new SoftAssertions();
         softAssertions.assertThat(response).isNotNull();
         softAssertions.assertThat(response.loginId()).isEqualTo(usersReqDto.getLoginId());
@@ -73,12 +76,13 @@ public class UsersTest {
         softAssertions.assertThat(response.nickname()).isEqualTo(usersReqDto.getNickname());
         softAssertions.assertThat(response.email()).isEqualTo(usersReqDto.getEmail());
         softAssertions.assertThat(response.phoneNumber()).isEqualTo(usersReqDto.getPhoneNumber());
+        softAssertions.assertThat(response.snsList()).isNotEmpty();
         softAssertions.assertAll();
     }
 
     @Test
-    @DisplayName("유저 생성시 빈 값 유효성 테스트")
-    public void 유저_생성시_빈값_유효성_테스트() throws Exception {
+    @DisplayName("유저생성시파라미터없으면안된다")
+    void 유저_생성시_파라미터_없으면_안된다() throws Exception {
         // given
         UsersReqDto usersReqDto = UsersReqDto.builder()
                 .build();
@@ -91,13 +95,14 @@ public class UsersTest {
                 .andExpect(status().isBadRequest())
                 .andReturn();
 
+
+        // then
         String responseString = sut.getResponse().getContentAsString();
         ProblemDetail response = objectMapper.readValue(responseString, ProblemDetail.class);
         @SuppressWarnings("unchecked")
         List<FieldErrorResDto> fieldErrors = (List<FieldErrorResDto>) Objects.requireNonNull(response.getProperties())
                 .get(ApplicationConstant.ExceptionHandler.FIELD_ERROR_KEY);
 
-        // then
         SoftAssertions softAssertions = new SoftAssertions();
         softAssertions.assertThat(fieldErrors).isNotNull();
         softAssertions.assertThat(fieldErrors)
@@ -115,9 +120,9 @@ public class UsersTest {
         softAssertions.assertAll();
     }
 
-    @DisplayName("유저 생성시 올바르지 않은 요청 값 유효성 테스트")
+    @DisplayName("유저생성시파라미터유효하지않으면안된다")
     @RepeatedTest(9)
-    public void 유저_생성시_올바르지_않은_요청_값_유효성_테스트(RepetitionInfo repetitionInfo) throws Exception {
+    void 유저생성시_파라미터_유효하지_않으면_안된다(RepetitionInfo repetitionInfo) throws Exception {
         // given
         int totalCount = repetitionInfo.getTotalRepetitions();
         int nowCount = repetitionInfo.getCurrentRepetition() - 1;
@@ -141,16 +146,15 @@ public class UsersTest {
                 .andExpect(status().isBadRequest())
                 .andReturn();
 
+        // then
         String responseString = sut.getResponse().getContentAsString();
         ProblemDetail response = objectMapper.readValue(responseString, ProblemDetail.class);
         @SuppressWarnings("unchecked")
         List<FieldErrorResDto> fieldErrors = (List<FieldErrorResDto>) Objects.requireNonNull(response.getProperties())
                 .get(ApplicationConstant.ExceptionHandler.FIELD_ERROR_KEY);
 
-        // then
         SoftAssertions softAssertions = new SoftAssertions();
         softAssertions.assertThat(fieldErrors).isNotNull();
-
         softAssertions.assertThat(fieldErrors)
                 .extracting("field")
                 .containsExactlyInAnyOrder(
@@ -167,8 +171,8 @@ public class UsersTest {
     }
 
     @Test
-    @DisplayName("유저 생성시 패스워드 불일치 예외 테스트")
-    void 유저_생성시_패스워드_불일치_예외_테스트() throws Exception {
+    @DisplayName("패스워드와확인패스워드불일치하면안된다")
+    void 패스워드와_확인패스워드_불일치하면_안된다() throws Exception {
         // given
         UsersReqDto usersReqDto = new UsersReqDto(
                 "kwang",
@@ -188,10 +192,10 @@ public class UsersTest {
                 .andExpect(status().isBadRequest())
                 .andReturn();
 
+        // then
         String responseString = sut.getResponse().getContentAsString();
         ProblemDetail response = objectMapper.readValue(responseString, ProblemDetail.class);
 
-        // then
         SoftAssertions softAssertions = new SoftAssertions();
         softAssertions.assertThat(response).isNotNull();
         softAssertions.assertThat(response.getDetail()).isEqualTo("유효하지 않은 비밀번호입니다.");
@@ -199,8 +203,8 @@ public class UsersTest {
     }
 
     @Test
-    @DisplayName("사용자 생성시 비밀번호 암호화 테스트")
-    void 사용자_생성시_비밀번호_암호화_테스트() throws Exception {
+    @DisplayName("유저비밀번호는암호화되어야한다")
+    void 유저비밀번호는_암호화_되어야한다() throws Exception {
         // given
         UsersReqDto usersReqDto = objectFactory.createUsersReqDto();
 
@@ -210,10 +214,11 @@ public class UsersTest {
                         .content(objectMapper.writeValueAsBytes(usersReqDto))
                 )
                 .andExpect(status().isCreated());
+
+        // then
         Users user = usersRepository.findByLoginIdAndIsDeletedFalse(usersReqDto.getLoginId())
                 .orElse(null);
 
-        // then
         SoftAssertions softAssertions = new SoftAssertions();
         softAssertions.assertThat(user).isNotNull();
         softAssertions.assertThat(passwordEncoder.matches(usersReqDto.getPassword(), user.getPassword())).isTrue();
@@ -221,8 +226,8 @@ public class UsersTest {
     }
 
     @Test
-    @DisplayName("사용자 생성시 id 중복 테스트")
-    void 사용자_생성시_id_중복_테스트() throws Exception {
+    @DisplayName("아이디가같은유저는생성안된다")
+    void 아이디가_같은_유저는_생성_안된다() throws Exception {
         // given
         UsersReqDto usersReqDto = objectFactory.createUsersReqDto();
         mvc.perform(post("/api/v1/users")
@@ -238,13 +243,29 @@ public class UsersTest {
                 )
                 .andExpect(status().isBadRequest())
                 .andReturn();
+
+        // then
         String responseString = mvcResult.getResponse().getContentAsString();
         ProblemDetail response = objectMapper.readValue(responseString, ProblemDetail.class);
 
-        // then
         SoftAssertions softAssertions = new SoftAssertions();
         softAssertions.assertThat(response).isNotNull();
         softAssertions.assertThat(response.getDetail()).isEqualTo("이미 등록된 사용자 아이디입니다.");
         softAssertions.assertAll();
+    }
+
+    @Test
+    void 이메일이_같은_유저는_생성_안된다() {
+        Assertions.fail();
+    }
+
+    @Test
+    void 회원가입시_비활성화_상태로_생성되어야한다() {
+        Assertions.fail();
+    }
+
+    @Test
+    void 회원가입시_이메일인증_메일이_발송된다() {
+        Assertions.fail();
     }
 }
