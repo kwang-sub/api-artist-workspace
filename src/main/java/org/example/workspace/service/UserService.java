@@ -53,7 +53,7 @@ public class UserService {
         String token = jwtUtil.generateEmailVerifyToken(users.getEmail(), users.getId());
         mailService.sendSignupConfirmMail(token, users.getEmail());
 
-        return userMapper.toDto(users);
+        return getDetail(users.getId());
     }
 
     private void checkInvalidRequest(UsersReqDto dto) {

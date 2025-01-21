@@ -5,11 +5,13 @@ import org.example.workspace.dto.request.UsersReqDto;
 import org.example.workspace.dto.request.UsersSnsReqDto;
 import org.example.workspace.entity.Role;
 import org.example.workspace.entity.Users;
+import org.example.workspace.entity.UsersSns;
 import org.example.workspace.entity.code.RoleType;
 import org.example.workspace.entity.code.SnsType;
 import org.example.workspace.exception.EntityNotFoundException;
 import org.example.workspace.repository.RoleRepository;
 import org.example.workspace.repository.UsersRepository;
+import org.example.workspace.repository.UsersSnsRepository;
 import org.example.workspace.security.CustomUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestComponent;
@@ -29,6 +31,9 @@ public class ObjectFactory {
 
     @Autowired
     private RoleRepository roleRepository;
+
+    @Autowired
+    private UsersSnsRepository usersSnsRepository;
 
     public UsersReqDto createUsersReqDto() {
         return UsersReqDto
@@ -84,5 +89,12 @@ public class ObjectFactory {
         usersRepository.save(user);
 
         return user;
+    }
+
+    public UsersSns createUsersSns(Users user) {
+        UsersSnsReqDto usersSnsReqDto = createUsersSnsReqDto(SnsType.INSTAGRAM);
+        UsersSns usersSns = UsersSns.create(user, usersSnsReqDto);
+        usersSnsRepository.save(usersSns);
+        return usersSns;
     }
 }
