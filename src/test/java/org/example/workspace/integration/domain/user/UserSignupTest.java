@@ -5,14 +5,14 @@ import jakarta.mail.Session;
 import jakarta.mail.internet.MimeMessage;
 import org.assertj.core.api.SoftAssertions;
 import org.example.workspace.common.ApplicationConstant;
-import org.example.workspace.dto.request.UsersReqDto;
+import org.example.workspace.dto.request.UserReqDto;
 import org.example.workspace.dto.request.UsersSnsReqDto;
 import org.example.workspace.dto.response.FieldErrorResDto;
-import org.example.workspace.dto.response.UsersResDto;
-import org.example.workspace.entity.Users;
+import org.example.workspace.dto.response.UserResDto;
+import org.example.workspace.entity.User;
 import org.example.workspace.factory.ObjectFactory;
 import org.example.workspace.factory.RequestParameterFactory;
-import org.example.workspace.repository.UsersRepository;
+import org.example.workspace.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.RepetitionInfo;
@@ -41,7 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 @ComponentScan(basePackages = "org.example.workspace")
 @AutoConfigureMockMvc
-public class UsersSignupTest {
+public class UserSignupTest {
 
     @Autowired
     private MockMvc mvc;
@@ -52,7 +52,7 @@ public class UsersSignupTest {
     @Autowired
     private RequestParameterFactory requestParameterFactory;
     @Autowired
-    private UsersRepository usersRepository;
+    private UserRepository userRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
 
@@ -66,28 +66,28 @@ public class UsersSignupTest {
     void 유저_생성이_가능하다() throws Exception {
         // given
         when(mockMailSender.createMimeMessage()).thenReturn(new MimeMessage((Session) null));
-        UsersReqDto usersReqDto = objectFactory.createUsersReqDto();
+        UserReqDto userReqDto = objectFactory.createUsersReqDto();
 
         // when
 
         MvcResult sut = mvc.perform(post(URL)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(usersReqDto))
+                        .content(objectMapper.writeValueAsString(userReqDto))
                 )
                 .andExpect(status().isCreated())
                 .andReturn();
 
         // then
         String responseString = sut.getResponse().getContentAsString();
-        UsersResDto response = objectMapper.readValue(responseString, UsersResDto.class);
+        UserResDto response = objectMapper.readValue(responseString, UserResDto.class);
 
         SoftAssertions softAssertions = new SoftAssertions();
         softAssertions.assertThat(response).isNotNull();
-        softAssertions.assertThat(response.loginId()).isEqualTo(usersReqDto.loginId());
-        softAssertions.assertThat(response.userName()).isEqualTo(usersReqDto.userName());
-        softAssertions.assertThat(response.nickname()).isEqualTo(usersReqDto.nickname());
-        softAssertions.assertThat(response.email()).isEqualTo(usersReqDto.email());
-        softAssertions.assertThat(response.phoneNumber()).isEqualTo(usersReqDto.phoneNumber());
+        softAssertions.assertThat(response.loginId()).isEqualTo(userReqDto.loginId());
+        softAssertions.assertThat(response.userName()).isEqualTo(userReqDto.userName());
+        softAssertions.assertThat(response.nickname()).isEqualTo(userReqDto.nickname());
+        softAssertions.assertThat(response.email()).isEqualTo(userReqDto.email());
+        softAssertions.assertThat(response.phoneNumber()).isEqualTo(userReqDto.phoneNumber());
         softAssertions.assertThat(response.isActivated()).isFalse();
         softAssertions.assertThat(response.userSnsList()).isNotEmpty();
         softAssertions.assertAll();
@@ -97,13 +97,13 @@ public class UsersSignupTest {
     @DisplayName("유저생성시파라미터없으면안된다")
     void 유저_생성시_파라미터_없으면_안된다() throws Exception {
         // given
-        UsersReqDto usersReqDto = UsersReqDto.builder()
+        UserReqDto userReqDto = UserReqDto.builder()
                 .build();
 
         // when
         MvcResult sut = mvc.perform(post(URL)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsBytes(usersReqDto))
+                        .content(objectMapper.writeValueAsBytes(userReqDto))
                 )
                 .andExpect(status().isBadRequest())
                 .andReturn();
@@ -142,7 +142,7 @@ public class UsersSignupTest {
         int nowCount = repetitionInfo.getCurrentRepetition() - 1;
 
         String invalidPassword = requestParameterFactory.createInvalidPassword(nowCount, totalCount);
-        UsersReqDto usersReqDto = UsersReqDto
+        UserReqDto userReqDto = UserReqDto
                 .builder()
                 .loginId(requestParameterFactory.createInvalidLoginId(nowCount, totalCount))
                 .password(invalidPassword)
@@ -158,7 +158,7 @@ public class UsersSignupTest {
         // when
         MvcResult sut = mvc.perform(post(URL)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsBytes(usersReqDto))
+                        .content(objectMapper.writeValueAsBytes(userReqDto))
                 )
                 .andExpect(status().isBadRequest())
                 .andReturn();
@@ -194,7 +194,7 @@ public class UsersSignupTest {
     @DisplayName("패스워드와확인패스워드불일치하면안된다")
     void 패스워드와_확인패스워드_불일치하면_안된다() throws Exception {
         // given
-        UsersReqDto usersReqDto = UsersReqDto.builder()
+        UserReqDto userReqDto = UserReqDto.builder()
                 .loginId("kwang")
                 .password("!work1234")
                 .confirmPassword("!!work1234")
@@ -208,7 +208,7 @@ public class UsersSignupTest {
         // when
         MvcResult sut = mvc.perform(post(URL)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsBytes(usersReqDto))
+                        .content(objectMapper.writeValueAsBytes(userReqDto))
                 )
                 .andExpect(status().isBadRequest())
                 .andReturn();
@@ -228,22 +228,22 @@ public class UsersSignupTest {
     void 유저비밀번호는_암호화_되어야한다() throws Exception {
         // given
         when(mockMailSender.createMimeMessage()).thenReturn(new MimeMessage((Session) null));
-        UsersReqDto usersReqDto = objectFactory.createUsersReqDto();
+        UserReqDto userReqDto = objectFactory.createUsersReqDto();
 
         // when
         mvc.perform(post(URL)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsBytes(usersReqDto))
+                        .content(objectMapper.writeValueAsBytes(userReqDto))
                 )
                 .andExpect(status().isCreated());
 
         // then
-        Users users = usersRepository.findByLoginIdAndIsDeletedFalse(usersReqDto.loginId())
+        User user = userRepository.findByLoginIdAndIsDeletedFalse(userReqDto.loginId())
                 .orElse(null);
 
         SoftAssertions softAssertions = new SoftAssertions();
-        softAssertions.assertThat(users).isNotNull();
-        softAssertions.assertThat(passwordEncoder.matches(usersReqDto.password(), users.getPassword())).isTrue();
+        softAssertions.assertThat(user).isNotNull();
+        softAssertions.assertThat(passwordEncoder.matches(userReqDto.password(), user.getPassword())).isTrue();
         softAssertions.assertAll();
     }
 
@@ -252,17 +252,17 @@ public class UsersSignupTest {
     void 아이디가_같은_유저는_생성_안된다() throws Exception {
         // given
         when(mockMailSender.createMimeMessage()).thenReturn(new MimeMessage((Session) null));
-        UsersReqDto usersReqDto = objectFactory.createUsersReqDto();
+        UserReqDto userReqDto = objectFactory.createUsersReqDto();
         mvc.perform(post(URL)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(usersReqDto))
+                        .content(objectMapper.writeValueAsString(userReqDto))
                 )
                 .andExpect(status().isCreated());
 
         // when
         MvcResult mvcResult = mvc.perform(post(URL)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(usersReqDto))
+                        .content(objectMapper.writeValueAsString(userReqDto))
                 )
                 .andExpect(status().isBadRequest())
                 .andReturn();
@@ -281,20 +281,20 @@ public class UsersSignupTest {
     void 이메일이_같은_유저는_생성_안된다() throws Exception {
         // given
         when(mockMailSender.createMimeMessage()).thenReturn(new MimeMessage((Session) null));
-        UsersReqDto usersReqDto = objectFactory.createUsersReqDto();
+        UserReqDto userReqDto = objectFactory.createUsersReqDto();
         mvc.perform(post(URL)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(usersReqDto))
+                        .content(objectMapper.writeValueAsString(userReqDto))
                 )
                 .andExpect(status().isCreated());
-        UsersReqDto duplicateEmailUser = UsersReqDto.builder()
+        UserReqDto duplicateEmailUser = UserReqDto.builder()
                 .loginId("newuser")
                 .password("!work1234")
                 .confirmPassword("!work1234")
                 .userName("newuser")
                 .nickname("newuser")
                 .workspaceName("newuser")
-                .email(usersReqDto.email())
+                .email(userReqDto.email())
                 .phoneNumber("01012341234")
                 .build();
 
@@ -319,13 +319,13 @@ public class UsersSignupTest {
     @Test
     void 회원가입시_이메일인증_메일이_발송된다() throws Exception {
         // given
-        UsersReqDto usersReqDto = objectFactory.createUsersReqDto();
+        UserReqDto userReqDto = objectFactory.createUsersReqDto();
         when(mockMailSender.createMimeMessage()).thenReturn(new MimeMessage((Session) null));
 
         // when
         mvc.perform(post(URL)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(usersReqDto))
+                        .content(objectMapper.writeValueAsString(userReqDto))
                 )
                 .andExpect(status().isCreated());
 

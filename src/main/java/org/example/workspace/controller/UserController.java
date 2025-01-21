@@ -1,8 +1,8 @@
 package org.example.workspace.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.example.workspace.dto.request.UsersReqDto;
-import org.example.workspace.dto.response.UsersResDto;
+import org.example.workspace.dto.request.UserReqDto;
+import org.example.workspace.dto.response.UserResDto;
 import org.example.workspace.security.CustomUserDetails;
 import org.example.workspace.service.UserService;
 import org.springframework.http.ResponseEntity;
@@ -20,13 +20,13 @@ public class UserController {
     private final UserService service;
 
     @GetMapping("/my")
-    public ResponseEntity<UsersResDto> getMyInfo(@AuthenticationPrincipal CustomUserDetails user) {
+    public ResponseEntity<UserResDto> getMyInfo(@AuthenticationPrincipal CustomUserDetails user) {
         return ResponseEntity.ok(service.getDetail(user.getId()));
     }
 
     @PostMapping
-    public ResponseEntity<UsersResDto> createUser(@RequestBody @Validated UsersReqDto dto) {
-        UsersResDto body = service.create(dto);
+    public ResponseEntity<UserResDto> createUser(@RequestBody @Validated UserReqDto dto) {
+        UserResDto body = service.create(dto);
         // TODO 응답 url 확인 필요
         return ResponseEntity.created(URI.create("d")).body(body);
     }

@@ -11,11 +11,11 @@ import org.example.workspace.entity.code.SnsType;
 
 @Getter
 @Entity
-@Table(name = "tbl_users_sns")
+@Table(name = "tbl_user_sns")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UsersSns extends AbstractAuditingEntity {
+public class UserSns extends AbstractAuditingEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,15 +32,15 @@ public class UsersSns extends AbstractAuditingEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
-    private Users users;
+    private User user;
 
-    public static UsersSns create(Users users, UsersSnsReqDto dto) {
-        UsersSns usersSns = UsersSns.builder()
+    public static UserSns create(User user, UsersSnsReqDto dto) {
+        UserSns userSns = UserSns.builder()
                 .snsType(dto.snsType())
                 .snsUsername(dto.snsUsername())
-                .users(users)
+                .user(user)
                 .build();
-        users.addSns(usersSns);
-        return usersSns;
+        user.addSns(userSns);
+        return userSns;
     }
 }

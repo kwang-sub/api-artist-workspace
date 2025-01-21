@@ -2,8 +2,8 @@ package org.example.workspace.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.workspace.dto.request.UsersSnsReqDto;
-import org.example.workspace.entity.Users;
-import org.example.workspace.entity.UsersSns;
+import org.example.workspace.entity.User;
+import org.example.workspace.entity.UserSns;
 import org.example.workspace.repository.UsersSnsRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,10 +17,10 @@ public class UserSnsService {
 
     private final UsersSnsRepository usersSnsRepository;
 
-    public void saveAll(Users users, List<UsersSnsReqDto> usersSnsReqDtos) {
+    public void saveAll(User user, List<UsersSnsReqDto> usersSnsReqDtos) {
 
-        List<UsersSns> usersSns = usersSnsReqDtos.stream().map(it -> UsersSns.create(users, it))
+        List<UserSns> userSns = usersSnsReqDtos.stream().map(it -> UserSns.create(user, it))
                 .toList();
-        usersSnsRepository.saveAll(usersSns);
+        usersSnsRepository.saveAll(userSns);
     }
 }

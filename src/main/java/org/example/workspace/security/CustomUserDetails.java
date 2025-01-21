@@ -1,7 +1,7 @@
 package org.example.workspace.security;
 
 import lombok.*;
-import org.example.workspace.entity.Users;
+import org.example.workspace.entity.User;
 import org.example.workspace.entity.code.RoleType;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.GrantedAuthority;
@@ -15,7 +15,7 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class CustomUserDetails implements UserDetails {
-    private Users user;
+    private User user;
     private RoleType roleType;
     @Getter
     private Long id;
@@ -55,7 +55,7 @@ public class CustomUserDetails implements UserDetails {
         return user.getIsActivated();
     }
 
-    public static CustomUserDetails create(Users user, RoleType role) {
+    public static CustomUserDetails create(User user, RoleType role) {
         return CustomUserDetails.builder()
                 .id(user.getId())
                 .user(user)

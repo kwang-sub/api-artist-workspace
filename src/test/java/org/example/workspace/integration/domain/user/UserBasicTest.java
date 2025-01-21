@@ -2,9 +2,9 @@ package org.example.workspace.integration.domain.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.assertj.core.api.SoftAssertions;
-import org.example.workspace.dto.response.UsersResDto;
-import org.example.workspace.entity.Users;
-import org.example.workspace.entity.UsersSns;
+import org.example.workspace.dto.response.UserResDto;
+import org.example.workspace.entity.User;
+import org.example.workspace.entity.UserSns;
 import org.example.workspace.factory.ObjectFactory;
 import org.example.workspace.util.JwtUtil;
 import org.junit.jupiter.api.Test;
@@ -23,7 +23,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 @Transactional
 @ComponentScan(basePackages = "org.example.workspace")
 @AutoConfigureMockMvc
-public class UsersBasicTest {
+public class UserBasicTest {
 
     @Autowired
     private MockMvc mvc;
@@ -37,8 +37,8 @@ public class UsersBasicTest {
     @Test
     void 사용자는_본인정보를_조회할수있다() throws Exception {
         // given
-        Users user = objectFactory.createUsersEntity();
-        UsersSns usersSns = objectFactory.createUsersSns(user);
+        User user = objectFactory.createUsersEntity();
+        UserSns userSns = objectFactory.createUsersSns(user);
         String token = jwtUtil.generateSignInToken(user.getLoginId(), user.getRole().getRoleType())
                 .accessToken();
         // when
@@ -49,7 +49,7 @@ public class UsersBasicTest {
                 .andReturn();
         // then
         String responseString = mvcResult.getResponse().getContentAsString();
-        UsersResDto response = objectMapper.readValue(responseString, UsersResDto.class);
+        UserResDto response = objectMapper.readValue(responseString, UserResDto.class);
 
         SoftAssertions softAssertions = new SoftAssertions();
         softAssertions.assertThat(response).isNotNull();

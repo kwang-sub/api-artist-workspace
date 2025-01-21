@@ -1,7 +1,7 @@
 -- liquibase formatted sql
 -- changeset kwang:20250113_create_table.sql
 
-create table if not exists tbl_users
+create table if not exists tbl_user
 (
     id                   bigint       not null primary key auto_increment comment '인덱스번호',
     role_id              BIGINT       not null comment '역할인덱스ID',
@@ -17,7 +17,7 @@ create table if not exists tbl_users
     last_modified_by     VARCHAR(100) not null comment '수정자ID',
     last_modified_date   DATETIME     not null comment '수정일시'
 );
-insert into tbl_users (id, role_id, login_id, password, user_name, email, is_activated, is_use_temp_password,
+insert into tbl_user (id, role_id, login_id, password, user_name, email, is_activated, is_use_temp_password,
                        is_deleted, created_by, created_date, last_modified_by, last_modified_date)
     values (1, 1, 'admin', '$2a$10$ErVGsvBtS2QRprCiNGmxKuIfss/l7bfT.qp4xHZ/35P1hj.NtuXxa', '어드민',
            'choikwangsub@gmail.com', 1, 0, 0, 'admin', now(), 'admin', now());
@@ -42,5 +42,5 @@ insert into tbl_role(id, role_code, role_name, role_desc, is_deleted, created_by
 values (1, '00', 'ROLE_ADMIN', 'admin', 0, 'admin', now(), 'admin', now()),
        (2, '01', 'ROLE_ARTIST', 'artist', 0, 'admin', now(), 'admin', now());
 
-alter table tbl_users
-    add constraint fk_tbl_users_role foreign key (role_id) references tbl_role (id);
+alter table tbl_user
+    add constraint fk_tbl_user_role foreign key (role_id) references tbl_role (id);

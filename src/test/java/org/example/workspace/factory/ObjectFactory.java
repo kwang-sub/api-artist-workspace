@@ -1,16 +1,16 @@
 package org.example.workspace.factory;
 
 import org.example.workspace.dto.request.AuthReqDto;
-import org.example.workspace.dto.request.UsersReqDto;
+import org.example.workspace.dto.request.UserReqDto;
 import org.example.workspace.dto.request.UsersSnsReqDto;
 import org.example.workspace.entity.Role;
-import org.example.workspace.entity.Users;
-import org.example.workspace.entity.UsersSns;
+import org.example.workspace.entity.User;
+import org.example.workspace.entity.UserSns;
 import org.example.workspace.entity.code.RoleType;
 import org.example.workspace.entity.code.SnsType;
 import org.example.workspace.exception.EntityNotFoundException;
 import org.example.workspace.repository.RoleRepository;
-import org.example.workspace.repository.UsersRepository;
+import org.example.workspace.repository.UserRepository;
 import org.example.workspace.repository.UsersSnsRepository;
 import org.example.workspace.security.CustomUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +27,7 @@ public class ObjectFactory {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private UsersRepository usersRepository;
+    private UserRepository userRepository;
 
     @Autowired
     private RoleRepository roleRepository;
@@ -35,8 +35,8 @@ public class ObjectFactory {
     @Autowired
     private UsersSnsRepository usersSnsRepository;
 
-    public UsersReqDto createUsersReqDto() {
-        return UsersReqDto
+    public UserReqDto createUsersReqDto() {
+        return UserReqDto
                 .builder()
                 .loginId("kwang")
                 .password("!work1234")
@@ -69,32 +69,32 @@ public class ObjectFactory {
     }
 
     public UserDetails createRoleUserDetails(AuthReqDto authReqDto) {
-        Users users = Users.builder()
+        User user = User.builder()
                 .loginId(authReqDto.username())
                 .password(passwordEncoder.encode(authReqDto.password()))
                 .role(createRole(RoleType.ROLE_ARTIST))
                 .isActivated(true)
                 .build();
 
-        return CustomUserDetails.create(users, users.getRole().getRoleType());
+        return CustomUserDetails.create(user, user.getRole().getRoleType());
     }
 
-    public Users createUsersEntity() {
+    public User createUsersEntity() {
         Role role = roleRepository.findByRoleType(RoleType.ROLE_ARTIST)
                 .orElseThrow(() -> new EntityNotFoundException(Role.class, null));
-        UsersReqDto usersReqDto = createUsersReqDto();
+        UserReqDto userReqDto = createUsersReqDto();
 
-        Users user = Users.create(usersReqDto, passwordEncoder.encode(usersReqDto.password()), role);
+        User user = User.create(userReqDto, passwordEncoder.encode(userReqDto.password()), role);
 
-        usersRepository.save(user);
+        userRepository.save(user);
 
         return user;
     }
 
-    public UsersSns createUsersSns(Users user) {
+    public UserSns createUsersSns(User user) {
         UsersSnsReqDto usersSnsReqDto = createUsersSnsReqDto(SnsType.INSTAGRAM);
-        UsersSns usersSns = UsersSns.create(user, usersSnsReqDto);
-        usersSnsRepository.save(usersSns);
-        return usersSns;
+        UserSns userSns = UserSns.create(user, usersSnsReqDto);
+        usersSnsRepository.save(userSns);
+        return userSns;
     }
 }

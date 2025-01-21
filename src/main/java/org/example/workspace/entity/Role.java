@@ -35,6 +35,6 @@ public class Role extends AbstractAuditingEntity {
 
     @OneToMany(mappedBy = "role")
     @Builder.Default
-    private Set<Users> users = new LinkedHashSet<>();
+    private Set<User> users = new LinkedHashSet<>();
 
 }

@@ -1,9 +1,9 @@
 package org.example.workspace.security;
 
 import lombok.RequiredArgsConstructor;
-import org.example.workspace.entity.Users;
+import org.example.workspace.entity.User;
 import org.example.workspace.entity.code.RoleType;
-import org.example.workspace.repository.UsersRepository;
+import org.example.workspace.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -14,12 +14,12 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private final UsersRepository userRepository;
+    private final UserRepository userRepository;
 
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Users user = userRepository.findByLoginIdAndIsDeletedFalse(username)
+        User user = userRepository.findByLoginIdAndIsDeletedFalse(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
         RoleType roleType = user.getRole().getRoleType();
 

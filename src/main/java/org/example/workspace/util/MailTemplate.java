@@ -62,7 +62,7 @@ public class MailTemplate {
                         <p>회원가입을 완료하기 위해 아래 버튼을 클릭하여 이메일 인증을 진행해주세요.</p>
                         <p>이 링크는 24시간 동안 유효합니다.</p>
                         <div style="text-align: center;">
-                            <a href="%s/users/signup/confirm/key?%s" class="button">이메일 인증하기</a>
+                            <a href="%s/user/signup/confirm/key?%s" class="button">이메일 인증하기</a>
                         </div>
                     </div>
                     <div class="footer">

@@ -1,7 +1,7 @@
 package org.example.workspace.integration.domain.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.example.workspace.entity.Users;
+import org.example.workspace.entity.User;
 import org.example.workspace.factory.ObjectFactory;
 import org.example.workspace.factory.RequestParameterFactory;
 import org.example.workspace.util.JwtUtil;
@@ -24,7 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ComponentScan(basePackages = "org.example.workspace")
 @Transactional
 @AutoConfigureMockMvc
-public class UsersSupportTest {
+public class UserSupportTest {
 
     @Autowired
     private MockMvc mvc;
@@ -40,7 +40,7 @@ public class UsersSupportTest {
     @Test
     void 사용자_인증성공시_활성화된다() throws Exception {
         // given
-        Users user = objectFactory.createUsersEntity();
+        User user = objectFactory.createUsersEntity();
         assertThat(user.getIsActivated()).isFalse();
         String token = jwtUtil.generateEmailVerifyToken(user.getEmail(), user.getId());
 
@@ -55,7 +55,7 @@ public class UsersSupportTest {
     @Test
     void 사용자_인증시_올바르지_않은_토큰은_예외발생한다() throws Exception {
         // given
-        Users user = objectFactory.createUsersEntity();
+        User user = objectFactory.createUsersEntity();
         assertThat(user.getIsActivated()).isFalse();
         String token = jwtUtil.generateSignInToken(user.getUserName(), user.getRole().getRoleType())
                 .accessToken();

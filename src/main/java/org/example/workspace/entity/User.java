@@ -3,7 +3,7 @@ package org.example.workspace.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.example.workspace.common.ApplicationConstant;
-import org.example.workspace.dto.request.UsersReqDto;
+import org.example.workspace.dto.request.UserReqDto;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,8 +14,8 @@ import java.util.Objects;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "tbl_users")
-public class Users extends AbstractAuditingEntity {
+@Table(name = "tbl_user")
+public class User extends AbstractAuditingEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -56,12 +56,12 @@ public class Users extends AbstractAuditingEntity {
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;
 
-    @OneToMany(mappedBy = "users")
+    @OneToMany(mappedBy = "user")
     @Builder.Default
-    private List<UsersSns> userSnsList = new ArrayList<>();
+    private List<UserSns> userSnsList = new ArrayList<>();
 
-    public static Users create(UsersReqDto dto, String encodePassword, Role role) {
-        return Users.builder()
+    public static User create(UserReqDto dto, String encodePassword, Role role) {
+        return User.builder()
                 .loginId(dto.loginId())
                 .password(encodePassword)
                 .userName(dto.userName())
@@ -77,8 +77,8 @@ public class Users extends AbstractAuditingEntity {
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof Users users)) return false;
-        return Objects.equals(id, users.id);
+        if (!(o instanceof User user)) return false;
+        return Objects.equals(id, user.id);
     }
 
     @Override
@@ -86,8 +86,8 @@ public class Users extends AbstractAuditingEntity {
         return Objects.hashCode(id);
     }
 
-    public void addSns(UsersSns usersSns) {
-        this.userSnsList.add(usersSns);
+    public void addSns(UserSns userSns) {
+        this.userSnsList.add(userSns);
     }
 
     public void isVerified() {

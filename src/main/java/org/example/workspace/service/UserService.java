@@ -1,15 +1,15 @@
 package org.example.workspace.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.workspace.dto.request.UsersReqDto;
-import org.example.workspace.dto.response.UsersResDto;
+import org.example.workspace.dto.request.UserReqDto;
+import org.example.workspace.dto.response.UserResDto;
 import org.example.workspace.entity.Role;
-import org.example.workspace.entity.Users;
+import org.example.workspace.entity.User;
 import org.example.workspace.entity.code.RoleType;
 import org.example.workspace.exception.*;
 import org.example.workspace.mapper.UserMapper;
 import org.example.workspace.repository.RoleRepository;
-import org.example.workspace.repository.UsersRepository;
+import org.example.workspace.repository.UserRepository;
 import org.example.workspace.util.JwtUtil;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -22,7 +22,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserService {
 
-    private final UsersRepository usersRepository;
+    private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
@@ -31,32 +31,32 @@ public class UserService {
     private final JwtUtil jwtUtil;
 
     @Transactional(readOnly = true)
-    public UsersResDto getDetail(Long id) {
-        Users users = usersRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new EntityNotFoundException(Users.class, id));
+    public UserResDto getDetail(Long id) {
+        User user = userRepository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new EntityNotFoundException(User.class, id));
 
-        return userMapper.toDto(users);
+        return userMapper.toDto(user);
     }
 
-    public UsersResDto create(UsersReqDto dto) {
+    public UserResDto create(UserReqDto dto) {
         checkInvalidRequest(dto);
 
         Role role = roleRepository.findByRoleType(RoleType.ROLE_ARTIST)
                 .orElseThrow(() -> new EntityNotFoundException(Role.class, null));
         String encodePassword = passwordEncoder.encode(dto.password());
 
-        Users users = Users.create(dto, encodePassword, role);
-        usersRepository.save(users);
+        User user = User.create(dto, encodePassword, role);
+        userRepository.save(user);
 
-        userSnsService.saveAll(users, dto.userSnsList());
+        userSnsService.saveAll(user, dto.userSnsList());
 
-        String token = jwtUtil.generateEmailVerifyToken(users.getEmail(), users.getId());
-        mailService.sendSignupConfirmMail(token, users.getEmail());
+        String token = jwtUtil.generateEmailVerifyToken(user.getEmail(), user.getId());
+        mailService.sendSignupConfirmMail(token, user.getEmail());
 
-        return getDetail(users.getId());
+        return getDetail(user.getId());
     }
 
-    private void checkInvalidRequest(UsersReqDto dto) {
+    private void checkInvalidRequest(UserReqDto dto) {
         checkUserDuplicateLoginId(dto.loginId());
         checkUserDuplicateEmail(dto.email());
         checkConfirmPassword(dto.password(), dto.confirmPassword());
@@ -64,12 +64,12 @@ public class UserService {
     }
 
     private void checkUserDuplicateLoginId(String loginId) {
-        Optional<Users> existUser = usersRepository.findByLoginIdAndIsDeletedFalse(loginId);
+        Optional<User> existUser = userRepository.findByLoginIdAndIsDeletedFalse(loginId);
         if (existUser.isPresent()) throw new ExistsLoginIdException();
     }
 
     private void checkUserDuplicateEmail(String email) {
-        Optional<Users> existUser = usersRepository.findByEmailAndIsDeletedFalse(email);
+        Optional<User> existUser = userRepository.findByEmailAndIsDeletedFalse(email);
         if (existUser.isPresent()) throw new ExistsEmailException();
     }
 
@@ -84,11 +84,11 @@ public class UserService {
         Long userId = jwtUtil.extractId(token);
         String userEmail = jwtUtil.extractSubject(token);
 
-        Users user = usersRepository.findByIdAndEmailAndIsDeletedFalse(userId, userEmail)
-                .orElseThrow(() -> new EntityNotFoundException(Users.class, userId));
+        User user = userRepository.findByIdAndEmailAndIsDeletedFalse(userId, userEmail)
+                .orElseThrow(() -> new EntityNotFoundException(User.class, userId));
 
         user.isVerified();
-        usersRepository.save(user);
+        userRepository.save(user);
 
         return true;
     }

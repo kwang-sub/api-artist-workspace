@@ -2,7 +2,7 @@ package org.example.workspace.dto.response;
 
 import java.util.List;
 
-public record UsersResDto(
+public record UserResDto(
         Long id,
         String loginId,
         String userName,

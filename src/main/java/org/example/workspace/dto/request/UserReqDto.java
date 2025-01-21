@@ -11,7 +11,7 @@ import java.util.List;
 
 
 @Builder
-public record UsersReqDto(
+public record UserReqDto(
         @NotBlank
         @Pattern(regexp = "^[a-z][a-z0-9]{3,15}$")
         String loginId,
