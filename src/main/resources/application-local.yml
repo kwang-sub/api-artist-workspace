@@ -16,3 +16,6 @@ logging:
         workspace: debug
 app:
   domain: http://localhost:8080
+  file:
+    upload:
+      path: C:\workspace\upload
