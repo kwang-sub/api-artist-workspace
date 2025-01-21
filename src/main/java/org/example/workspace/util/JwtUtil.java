@@ -73,7 +73,7 @@ public class JwtUtil {
         claims.put(ApplicationConstant.Jwt.CLAIMS_KEY_CODE, verificationCode);
         return generateToken(
                 String.valueOf(id),
-                ApplicationConstant.Jwt.EMAIL_VERIFY_TOKEN_EXPIRATION_MS,
+                ApplicationConstant.Jwt.RECOVER_TOKEN_EXPIRATION_MS,
                 claims,
                 TokenType.RECOVERY
         );
