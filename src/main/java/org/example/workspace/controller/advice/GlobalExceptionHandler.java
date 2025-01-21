@@ -39,7 +39,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .orElseGet(() -> fieldErrors.isEmpty() ? ex.getMessage() : fieldErrors.get(0).message());
 
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, detail);
-        problem.setProperty(ApplicationConstant.ExceptionHandler.FIELD_ERROR_KEY, fieldErrors);
+        problem.setProperty(ApplicationConstant.Exception.FIELD_ERROR_KEY, fieldErrors);
 
         return handleExceptionInternal(ex, problem, headers, status, request);
     }

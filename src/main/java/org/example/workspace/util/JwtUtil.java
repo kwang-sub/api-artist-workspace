@@ -1,5 +1,6 @@
 package org.example.workspace.util;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -92,9 +93,9 @@ public class JwtUtil {
     }
 
     public String extractSubject(String token, TokenType tokenType) {
-        checkTokenType(token, tokenType);
         if (isTokenExpired(token))
             throw new InvalidTokenException();
+        checkTokenType(token, tokenType);
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
@@ -156,12 +157,16 @@ public class JwtUtil {
     }
 
     private Date extractExpiration(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getExpiration();
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(getSigningKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody()
+                    .getExpiration();
+        } catch (ExpiredJwtException e) {
+            throw new InvalidTokenException();
+        }
     }
 
     public boolean validateToken(String token, String username, TokenType tokenType) {

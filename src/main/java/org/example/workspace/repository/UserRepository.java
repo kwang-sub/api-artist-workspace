@@ -11,6 +11,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByEmailAndIsDeletedFalse(String username);
 
+    Optional<User> findByWorkspaceNameAndIsDeletedFalse(String workspaceName);
+
     Optional<User> findByIdAndIsDeletedFalse(Long id);
 
 

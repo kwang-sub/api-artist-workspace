@@ -1,13 +1,17 @@
 package org.example.workspace.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.workspace.common.ApplicationConstant;
 import org.example.workspace.dto.request.UserPasswordReqDto;
 import org.example.workspace.dto.request.UserReqDto;
 import org.example.workspace.dto.response.UserResDto;
 import org.example.workspace.entity.Role;
 import org.example.workspace.entity.User;
 import org.example.workspace.entity.code.RoleType;
-import org.example.workspace.exception.*;
+import org.example.workspace.exception.AlreadyRegisteredIdentifierFieldException;
+import org.example.workspace.exception.EntityNotFoundException;
+import org.example.workspace.exception.InvalidPasswordException;
+import org.example.workspace.exception.InvalidTokenException;
 import org.example.workspace.mapper.UserMapper;
 import org.example.workspace.repository.RoleRepository;
 import org.example.workspace.repository.UserRepository;
@@ -61,17 +65,26 @@ public class UserService {
     private void checkInvalidCreateRequest(UserReqDto dto) {
         checkUserDuplicateLoginId(dto.loginId());
         checkUserDuplicateEmail(dto.email());
+        checkUserDuplicateWorkspaceName(dto.workspaceName());
         checkConfirmPassword(dto.password(), dto.confirmPassword());
+    }
+
+    private void checkUserDuplicateWorkspaceName(String workspaceName) {
+        Optional<User> existUser = repository.findByWorkspaceNameAndIsDeletedFalse(workspaceName);
+        if (existUser.isPresent())
+            throw new AlreadyRegisteredIdentifierFieldException(ApplicationConstant.Exception.EXCEPTION_PARAM_WORKSPACE_NAME);
     }
 
     private void checkUserDuplicateLoginId(String loginId) {
         Optional<User> existUser = repository.findByLoginIdAndIsDeletedFalse(loginId);
-        if (existUser.isPresent()) throw new ExistsLoginIdException();
+        if (existUser.isPresent())
+            throw new AlreadyRegisteredIdentifierFieldException(ApplicationConstant.Exception.EXCEPTION_PARAM_LOGIN_ID);
     }
 
     private void checkUserDuplicateEmail(String email) {
         Optional<User> existUser = repository.findByEmailAndIsDeletedFalse(email);
-        if (existUser.isPresent()) throw new ExistsEmailException();
+        if (existUser.isPresent())
+            throw new AlreadyRegisteredIdentifierFieldException(ApplicationConstant.Exception.EXCEPTION_PARAM_EMAIL);
     }
 
     private void checkConfirmPassword(String password, String confirmPassword) {
@@ -115,6 +128,7 @@ public class UserService {
                 .orElseThrow(() -> new EntityNotFoundException(User.class, id));
         user.updatePassword(passwordEncoder.encode(dto.password()));
         repository.save(user);
+        userVerificationService.completeVerify(user);
         return true;
     }
 

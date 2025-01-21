@@ -37,8 +37,12 @@ public final class ApplicationConstant {
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static final class ExceptionHandler {
+    public static final class Exception {
         public static final String FIELD_ERROR_KEY = "fieldErrors";
+
+        public static final String EXCEPTION_PARAM_LOGIN_ID = "사용자 아이디";
+        public static final String EXCEPTION_PARAM_EMAIL = "이메일";
+        public static final String EXCEPTION_PARAM_WORKSPACE_NAME = "홈페이지명";
     }
 
 }

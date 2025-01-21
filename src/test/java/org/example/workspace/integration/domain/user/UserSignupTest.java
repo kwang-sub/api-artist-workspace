@@ -114,7 +114,7 @@ public class UserSignupTest {
         ProblemDetail response = objectMapper.readValue(responseString, ProblemDetail.class);
         @SuppressWarnings("unchecked")
         List<FieldErrorResDto> fieldErrors = (List<FieldErrorResDto>) Objects.requireNonNull(response.getProperties())
-                .get(ApplicationConstant.ExceptionHandler.FIELD_ERROR_KEY);
+                .get(ApplicationConstant.Exception.FIELD_ERROR_KEY);
 
         SoftAssertions softAssertions = new SoftAssertions();
         softAssertions.assertThat(fieldErrors).isNotNull();
@@ -168,7 +168,7 @@ public class UserSignupTest {
         ProblemDetail response = objectMapper.readValue(responseString, ProblemDetail.class);
         @SuppressWarnings("unchecked")
         List<FieldErrorResDto> fieldErrors = (List<FieldErrorResDto>) Objects.requireNonNull(response.getProperties())
-                .get(ApplicationConstant.ExceptionHandler.FIELD_ERROR_KEY);
+                .get(ApplicationConstant.Exception.FIELD_ERROR_KEY);
 
         SoftAssertions softAssertions = new SoftAssertions();
         softAssertions.assertThat(fieldErrors).isNotNull();
@@ -313,6 +313,45 @@ public class UserSignupTest {
         SoftAssertions softAssertions = new SoftAssertions();
         softAssertions.assertThat(response).isNotNull();
         softAssertions.assertThat(response.getDetail()).isEqualTo("이미 등록된 이메일입니다.");
+        softAssertions.assertAll();
+    }
+
+    @Test
+    void 홈페이지명이_같은_사용자는_생성_안된다() throws Exception {
+        // given
+        when(mockMailSender.createMimeMessage()).thenReturn(new MimeMessage((Session) null));
+        UserReqDto userReqDto = objectFactory.createUsersReqDto();
+        mvc.perform(post(URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(userReqDto))
+                )
+                .andExpect(status().isCreated());
+        UserReqDto duplicateEmailUser = UserReqDto.builder()
+                .loginId("newuser")
+                .password("!work1234")
+                .confirmPassword("!work1234")
+                .userName("newuser")
+                .nickname("newuser")
+                .workspaceName(userReqDto.workspaceName())
+                .email("new@gmail.com")
+                .phoneNumber("01012341234")
+                .build();
+
+        // when
+        MvcResult mvcResult = mvc.perform(post(URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(duplicateEmailUser))
+                )
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        // then
+        String responseString = mvcResult.getResponse().getContentAsString();
+        ProblemDetail response = objectMapper.readValue(responseString, ProblemDetail.class);
+
+        SoftAssertions softAssertions = new SoftAssertions();
+        softAssertions.assertThat(response).isNotNull();
+        softAssertions.assertThat(response.getDetail()).isEqualTo("이미 등록된 홈페이지명입니다.");
         softAssertions.assertAll();
     }
 
