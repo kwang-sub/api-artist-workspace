@@ -38,7 +38,7 @@ public class UserBasicTest {
     void 사용자는_본인정보를_조회할수있다() throws Exception {
         // given
         User user = objectFactory.createUsersEntity();
-        UserSns userSns = objectFactory.createUsersSns(user);
+        UserSns userSns = objectFactory.createUsersSnsEntity(user);
         String token = jwtUtil.generateSignInToken(user.getLoginId(), user.getRole().getRoleType())
                 .accessToken();
         // when
