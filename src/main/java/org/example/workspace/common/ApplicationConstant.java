@@ -10,6 +10,7 @@ public final class ApplicationConstant {
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
     public static final class Email{
         public static final String SIGNUP_CONFIRM_TITLE = "[Artist Workspace] 신규 가입을 환영합니다! 이메일 인증을 완료해주세요.";
+        public static final String RECOVERY_TITLE = "[Artist Workspace] 계정정보 찾기";
     }
 
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -27,6 +28,7 @@ public final class ApplicationConstant {
         public static final String CLAIMS_KEY_ROLE = "role";
         public static final String CLAIMS_KEY_ID = "id";
         public static final String CLAIMS_KEY_TYPE = "type";
+        public static final String CLAIMS_KEY_CODE = "code";
 
         public static final long ACCESS_TOKEN_EXPIRATION_MS = 5 * 60 * 1000;
         public static final long REFRESH_TOKEN_EXPIRATION_MS = 24 * 60 * 60 * 1000;

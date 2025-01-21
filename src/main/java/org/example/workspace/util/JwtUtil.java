@@ -68,6 +68,17 @@ public class JwtUtil {
         return generateToken(email, ApplicationConstant.Jwt.EMAIL_VERIFY_TOKEN_EXPIRATION_MS, claims, TokenType.EMAIL_VERIFY);
     }
 
+    public String generateRecoveryToken(Long id, String verificationCode) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put(ApplicationConstant.Jwt.CLAIMS_KEY_CODE, verificationCode);
+        return generateToken(
+                String.valueOf(id),
+                ApplicationConstant.Jwt.EMAIL_VERIFY_TOKEN_EXPIRATION_MS,
+                claims,
+                TokenType.RECOVERY
+        );
+    }
+
     private String generateToken(String subject, long expiration, Map<String, Object> claims, TokenType type) {
         Instant now = Instant.now(clock);
         claims.put(ApplicationConstant.Jwt.CLAIMS_KEY_TYPE, type.name());
@@ -80,7 +91,7 @@ public class JwtUtil {
                 .compact();
     }
 
-    public String extractSubject(String token , TokenType tokenType) {
+    public String extractSubject(String token, TokenType tokenType) {
         checkTokenType(token, tokenType);
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
@@ -148,7 +159,6 @@ public class JwtUtil {
     }
 
     public enum TokenType {
-        REFRESH, ACCESS, EMAIL_VERIFY
-
+        REFRESH, ACCESS, RECOVERY, EMAIL_VERIFY
     }
 }

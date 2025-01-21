@@ -3,6 +3,7 @@ package org.example.workspace.integration.domain.user;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.mail.Session;
 import jakarta.mail.internet.MimeMessage;
+import org.example.workspace.dto.request.UserPasswordReqDto;
 import org.example.workspace.dto.request.UserRecoveryReqDto;
 import org.example.workspace.dto.request.VerifyTokenReqDto;
 import org.example.workspace.entity.User;
@@ -26,6 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -62,7 +64,7 @@ public class UserSupportTest {
                         .content(objectMapper.writeValueAsBytes(verifyTokenReqDto))
                 )
                 .andExpect(status().isOk());
-        
+
         // then
         assertThat(user.getIsActivated()).isTrue();
     }
@@ -109,22 +111,35 @@ public class UserSupportTest {
     }
 
     @Test
-    void 사용자는_계정찾기시_등록되지_않은_이메일은_예외를_발생한다() {
-        fail();
+    void 사용자는_계정찾기시_등록되지_않은_이메일은_예외를_발생한다() throws Exception {
         // given
-
+        UserRecoveryReqDto userRecoveryReqDto = new UserRecoveryReqDto("fail@example.com");
         // when
-
+        MvcResult mvcResult = mvc.perform(post("/api/v1/users/recover")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(userRecoveryReqDto))
+                )
+                .andExpect(status().isBadRequest())
+                .andReturn();
         // then
+        String responseString = mvcResult.getResponse().getContentAsString();
+        ProblemDetail response = objectMapper.readValue(responseString, ProblemDetail.class);
+
+        assertThat(response.getDetail()).isEqualTo("엔티티 정보를 찾을 수 없습니다. entity: [User] identifier [null]");
     }
 
     @Test
-    void 사용자는_비밀번호_변경이_가능하다() {
-        fail();
+    void 사용자는_비밀번호_변경이_가능하다() throws Exception {
         // given
+        User user = objectFactory.createUsersEntity();
+        String token = jwtUtil.generateRecoveryToken(user.getId(), user.getEmail());
+        UserPasswordReqDto dto = objectFactory.createUserPasswordReqDto(token);
 
         // when
-
+        mvc.perform(patch("/api/v1/users/password")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsBytes(dto))
+        ).andExpect(status().isOk());
         // then
     }
 

@@ -8,5 +8,6 @@
     <include file="db/changelog/scripts/tbl/250115/20250115_create_users_relation_table.sql" relativeToChangelogFile="false"/>
     <include file="db/changelog/scripts/tbl/250120/20250120_change_user_table.sql" relativeToChangelogFile="false"/>
     <include file="db/changelog/scripts/tbl/250120/20250120_add_column_user_table.sql" relativeToChangelogFile="false"/>
+    <include file="db/changelog/scripts/tbl/250120/20250120_add_verification_table.sql" relativeToChangelogFile="false"/>
 
    </databaseChangeLog>

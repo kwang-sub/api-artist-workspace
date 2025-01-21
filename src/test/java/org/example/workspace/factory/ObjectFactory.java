@@ -1,6 +1,7 @@
 package org.example.workspace.factory;
 
 import org.example.workspace.dto.request.AuthReqDto;
+import org.example.workspace.dto.request.UserPasswordReqDto;
 import org.example.workspace.dto.request.UserReqDto;
 import org.example.workspace.dto.request.UsersSnsReqDto;
 import org.example.workspace.entity.Contents;
@@ -122,5 +123,13 @@ public class ObjectFactory {
         byte[] dummyImage = new byte[1024];
         Arrays.fill(dummyImage, (byte) 1);
         return new MockMultipartFile("file", filename, mediaType.getType(), dummyImage);
+    }
+
+    public UserPasswordReqDto createUserPasswordReqDto(String token) {
+        return new UserPasswordReqDto(
+                "!work1234",
+                "!work1234",
+                token
+        );
     }
 }

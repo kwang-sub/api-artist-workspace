@@ -22,7 +22,11 @@ public class MailService {
         );
     }
 
-    public void sendUserRecovery(String loginId, String to) {
-
+    public void sendUserRecovery(String loginId, String token, String to) {
+        workspaceMailSender.sendHtmlMessage(
+                to,
+                ApplicationConstant.Email.RECOVERY_TITLE,
+                mailTemplate.getRecoveryTemplate(loginId,token)
+        );
     }
 }

@@ -22,17 +22,18 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserService {
 
-    private final UserRepository userRepository;
+    private final UserRepository repository;
     private final UserMapper userMapper;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserSnsService userSnsService;
     private final MailService mailService;
     private final JwtUtil jwtUtil;
+    private final UserVerificationService userVerificationService;
 
     @Transactional(readOnly = true)
     public UserResDto getDetail(Long id) {
-        User user = userRepository.findByIdAndIsDeletedFalse(id)
+        User user = repository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new EntityNotFoundException(User.class, id));
 
         return userMapper.toDto(user);
@@ -46,7 +47,7 @@ public class UserService {
         String encodePassword = passwordEncoder.encode(dto.password());
 
         User user = User.create(dto, encodePassword, role);
-        userRepository.save(user);
+        repository.save(user);
 
         userSnsService.saveAll(user, dto.userSnsList());
 
@@ -64,12 +65,12 @@ public class UserService {
     }
 
     private void checkUserDuplicateLoginId(String loginId) {
-        Optional<User> existUser = userRepository.findByLoginIdAndIsDeletedFalse(loginId);
+        Optional<User> existUser = repository.findByLoginIdAndIsDeletedFalse(loginId);
         if (existUser.isPresent()) throw new ExistsLoginIdException();
     }
 
     private void checkUserDuplicateEmail(String email) {
-        Optional<User> existUser = userRepository.findByEmailAndIsDeletedFalse(email);
+        Optional<User> existUser = repository.findByEmailAndIsDeletedFalse(email);
         if (existUser.isPresent()) throw new ExistsEmailException();
     }
 
@@ -84,23 +85,22 @@ public class UserService {
         Long userId = jwtUtil.extractId(token);
         String userEmail = jwtUtil.extractSubject(token, JwtUtil.TokenType.EMAIL_VERIFY);
 
-        User user = userRepository.findByIdAndEmailAndIsDeletedFalse(userId, userEmail)
+        User user = repository.findByIdAndEmailAndIsDeletedFalse(userId, userEmail)
                 .orElseThrow(() -> new EntityNotFoundException(User.class, userId));
 
         user.isVerified();
-        userRepository.save(user);
+        repository.save(user);
 
         return true;
     }
 
-    // TODO 구현 필요
     public Boolean recovery(String email) {
-        User user = userRepository.findByEmailAndIsDeletedFalse(email)
+        User user = repository.findByEmailAndIsDeletedFalse(email)
                 .orElseThrow(() -> new EntityNotFoundException(User.class, null));
 
-//        jwtUtil.generateRecoveryToken();
-        mailService.sendUserRecovery(user.getLoginId(), user.getEmail());
-
+        String verificationCode = userVerificationService.create(user);
+        String token = jwtUtil.generateRecoveryToken(user.getId(), verificationCode);
+        mailService.sendUserRecovery(user.getLoginId(), token, user.getEmail());
         return true;
     }
 }

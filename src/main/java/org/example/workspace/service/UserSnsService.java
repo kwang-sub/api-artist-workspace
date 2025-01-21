@@ -15,12 +15,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserSnsService {
 
-    private final UsersSnsRepository usersSnsRepository;
+    private final UsersSnsRepository repository;
 
     public void saveAll(User user, List<UsersSnsReqDto> usersSnsReqDtos) {
 
         List<UserSns> userSns = usersSnsReqDtos.stream().map(it -> UserSns.create(user, it))
                 .toList();
-        usersSnsRepository.saveAll(userSns);
+        repository.saveAll(userSns);
     }
 }
