@@ -72,7 +72,7 @@ public class UserSupportTest {
     }
 
     @Test
-    void 사용자는_이메일로_마스킹된_아이디를_찾을수있다() {
+    void 사용자는_계정찾기는_이메일로_아이디와_비밀번호변경_토큰과_함께_발송된다() {
         fail();
         // given
 
@@ -82,7 +82,7 @@ public class UserSupportTest {
     }
 
     @Test
-    void 사용자는_로그인아이디_이메일로_임시_비밀번호를_이메일로_발송할수있다() {
+    void 사용자는_계정찾기시_등록되지_않은_이메일은_예외를_발생한다() {
         fail();
         // given
 
@@ -92,12 +92,17 @@ public class UserSupportTest {
     }
 
     @Test
-    void 사용자_비밀번호_찾기시_로그인아이디_이메일에_맞는_계정_없는_경우_예외발생한다() {
+    void 사용자는_비밀번호_변경이_가능하다() {
         fail();
         // given
 
         // when
 
         // then
+    }
+
+    @Test
+    void 사용자_비밀번호_변경시에_토큰이_유효해야한다() {
+        fail();
     }
 }
