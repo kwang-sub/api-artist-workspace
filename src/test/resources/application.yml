@@ -1,0 +1,32 @@
+spring:
+  profiles:
+    include: secret
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    properties:
+      mail:
+        smtp:
+          auth: true
+          timeout: 5000
+          starttls:
+            enable: true
+  jpa:
+    properties:
+      hibernate:
+        ddl-auto: none
+        dialect: org.hibernate.dialect.MySQLDialect
+        show_sql: true
+  datasource:
+    driverClassName: org.h2.Driver
+    username: sa
+    password:
+    url: jdbc:h2:mem:test;MODE=MySQL;
+  liquibase:
+    enabled: true
+app:
+  security:
+    cors:
+      allowed-origins: http://localhost:9000,https://localhost:9000
+      allowed-methods: GET,POST,PUT,DELETE,OPTIONS
+  domain: http://localhost:8080

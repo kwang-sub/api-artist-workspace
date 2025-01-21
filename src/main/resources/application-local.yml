@@ -1,6 +1,4 @@
 spring:
-  application:
-    name: api-artist-workspace
   jpa:
     properties:
       hibernate:
@@ -11,11 +9,10 @@ spring:
     username: root
     password: 1234
     url: jdbc:mysql://localhost:3306/workspace?serverTimezone=Asia/Seoul
-liquibase:
-  enabled: true
-  change-log: classpath:db/changelog/db.changelog-master.yaml
 logging:
   level:
     com:
       example:
         workspace: debug
+app:
+  domain: http://localhost:8080
