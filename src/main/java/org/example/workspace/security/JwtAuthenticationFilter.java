@@ -31,7 +31,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 HttpMethod.POST + "/api/v1/login",
                 HttpMethod.POST + "/api/v1/login-refresh",
                 HttpMethod.POST + "/api/v1/users",
-                HttpMethod.GET + "/api/v1/users/verify"
+                HttpMethod.POST + "/api/v1/users/verify",
+                HttpMethod.POST + "/api/v1/users/recover"
         );
 
         String requestURI = request.getRequestURI();
@@ -57,14 +58,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String token = authHeader.substring(7);
         try {
-            String username = jwtUtil.extractSubject(token);
+            String username = jwtUtil.extractSubject(token, JwtUtil.TokenType.ACCESS);
             if (username == null) {
                 flushResponseWithStatusUnauthorized(response);
                 return;
             }
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-            if (jwtUtil.validateToken(token, userDetails.getUsername())) {
+            if (jwtUtil.validateToken(token, userDetails.getUsername(), JwtUtil.TokenType.ACCESS)) {
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
                 SecurityContextHolder.getContext().setAuthentication(authentication);

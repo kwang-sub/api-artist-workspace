@@ -45,9 +45,9 @@ public class LoginController {
     public ResponseEntity<AuthTokenResDto> loginRefresh(@RequestBody @Validated TokenRefreshReqDto dto) {
         String refreshToken = dto.refreshToken();
 
-        String username = jwtUtil.extractSubject(refreshToken);
+        String username = jwtUtil.extractSubject(refreshToken, JwtUtil.TokenType.REFRESH);
         RoleType roleType = jwtUtil.extractRole(refreshToken);
-        if (!jwtUtil.validateToken(refreshToken, username))
+        if (!jwtUtil.validateToken(refreshToken, username, JwtUtil.TokenType.REFRESH))
             throw new AccessDeniedException("Invalid refresh token");
 
         AuthTokenResDto authTokenResDto = jwtUtil.generateSignInToken(username, roleType);

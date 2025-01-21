@@ -45,7 +45,7 @@ class JwtUtilTest {
         AuthTokenResDto tokens = jwtUtil.generateSignInToken("user", RoleType.ROLE_ARTIST);
 
         // when
-        String extractedUsername = jwtUtil.extractSubject(tokens.accessToken());
+        String extractedUsername = jwtUtil.extractSubject(tokens.accessToken(), JwtUtil.TokenType.ACCESS);
 
         // then
         assertThat(extractedUsername).isEqualTo("user");
@@ -135,8 +135,8 @@ class JwtUtilTest {
         AuthTokenResDto tokens = jwtUtil.generateSignInToken("user", RoleType.ROLE_ARTIST);
 
         // when
-        boolean isValid = jwtUtil.validateToken(tokens.accessToken(), "user");
-        boolean isInvalid = jwtUtil.validateToken(tokens.accessToken(), "another");
+        boolean isValid = jwtUtil.validateToken(tokens.accessToken(), "user", JwtUtil.TokenType.ACCESS);
+        boolean isInvalid = jwtUtil.validateToken(tokens.accessToken(), "another", JwtUtil.TokenType.ACCESS);
 
         // then
         assertThat(isValid).isTrue();

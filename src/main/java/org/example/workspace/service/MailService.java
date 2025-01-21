@@ -15,11 +15,14 @@ public class MailService {
     private final MailTemplate mailTemplate;
 
     public void sendSignupConfirmMail(String token, String to) {
-
         workspaceMailSender.sendHtmlMessage(
                 to,
                 ApplicationConstant.Email.SIGNUP_CONFIRM_TITLE,
                 mailTemplate.getSignupConfirmTemplate(token)
         );
+    }
+
+    public void sendUserRecovery(String loginId, String to) {
+
     }
 }

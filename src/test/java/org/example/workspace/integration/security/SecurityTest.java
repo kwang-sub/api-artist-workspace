@@ -111,7 +111,7 @@ public class SecurityTest {
         SoftAssertions softAssertions = new SoftAssertions();
         softAssertions.assertThat(accessToken).isNotNull();
         softAssertions.assertThat(jwtUtil.isTokenExpired(accessToken)).isFalse();
-        softAssertions.assertThat(jwtUtil.extractSubject(accessToken)).isEqualTo(authReqDto.username());
+        softAssertions.assertThat(jwtUtil.extractSubject(accessToken, JwtUtil.TokenType.ACCESS)).isEqualTo(authReqDto.username());
         softAssertions.assertThat(jwtUtil.extractRole(accessToken)).isEqualTo(RoleType.ROLE_ARTIST);
         softAssertions.assertThat(refreshToken).isNotNull();
         softAssertions.assertThat(jwtUtil.isTokenExpired(refreshToken)).isFalse();
@@ -144,7 +144,7 @@ public class SecurityTest {
         SoftAssertions softAssertions = new SoftAssertions();
         softAssertions.assertThat(newAccessToken).isNotNull();
         softAssertions.assertThat(jwtUtil.isTokenExpired(newAccessToken)).isFalse();
-        softAssertions.assertThat(jwtUtil.extractSubject(newAccessToken)).isEqualTo(username);
+        softAssertions.assertThat(jwtUtil.extractSubject(newAccessToken, JwtUtil.TokenType.ACCESS)).isEqualTo(username);
         softAssertions.assertThat(jwtUtil.extractRole(newAccessToken)).isEqualTo(roleType);
         softAssertions.assertThat(newRefreshToken).isNotNull();
         softAssertions.assertThat(jwtUtil.isTokenExpired(newRefreshToken)).isFalse();

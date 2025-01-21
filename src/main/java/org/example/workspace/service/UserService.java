@@ -82,13 +82,24 @@ public class UserService {
         if (jwtUtil.isTokenExpired(token))
             throw new InvalidTokenException();
         Long userId = jwtUtil.extractId(token);
-        String userEmail = jwtUtil.extractSubject(token);
+        String userEmail = jwtUtil.extractSubject(token, JwtUtil.TokenType.EMAIL_VERIFY);
 
         User user = userRepository.findByIdAndEmailAndIsDeletedFalse(userId, userEmail)
                 .orElseThrow(() -> new EntityNotFoundException(User.class, userId));
 
         user.isVerified();
         userRepository.save(user);
+
+        return true;
+    }
+
+    // TODO 구현 필요
+    public Boolean recovery(String email) {
+        User user = userRepository.findByEmailAndIsDeletedFalse(email)
+                .orElseThrow(() -> new EntityNotFoundException(User.class, null));
+
+//        jwtUtil.generateRecoveryToken();
+        mailService.sendUserRecovery(user.getLoginId(), user.getEmail());
 
         return true;
     }

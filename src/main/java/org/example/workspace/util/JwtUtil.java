@@ -39,27 +39,38 @@ public class JwtUtil {
     }
 
     private String generateAccessToken(String username, RoleType roleType) {
-        return generateSignInToken(username, roleType, ApplicationConstant.Jwt.ACCESS_TOKEN_EXPIRATION_MS);
+        return generateSignInToken(
+                username,
+                roleType,
+                ApplicationConstant.Jwt.ACCESS_TOKEN_EXPIRATION_MS,
+                TokenType.ACCESS
+        );
     }
 
     private String generateRefreshToken(String username, RoleType roleType) {
-        return generateSignInToken(username, roleType, ApplicationConstant.Jwt.REFRESH_TOKEN_EXPIRATION_MS);
+        return generateSignInToken(
+                username,
+                roleType,
+                ApplicationConstant.Jwt.REFRESH_TOKEN_EXPIRATION_MS,
+                TokenType.REFRESH
+        );
     }
 
-    private String generateSignInToken(String username, RoleType roleType, long expiration) {
+    private String generateSignInToken(String username, RoleType roleType, long expiration, TokenType type) {
         Map<String, Object> claims = new HashMap<>();
         claims.put(ApplicationConstant.Jwt.CLAIMS_KEY_ROLE, roleType.name());
-        return generateToken(username, expiration, claims);
+        return generateToken(username, expiration, claims, type);
     }
 
     public String generateEmailVerifyToken(String email, Long userId) {
         Map<String, Object> claims = new HashMap<>();
         claims.put(ApplicationConstant.Jwt.CLAIMS_KEY_ID, userId);
-        return generateToken(email, ApplicationConstant.Jwt.EMAIL_VERIFY_TOKEN_EXPIRATION_MS, claims);
+        return generateToken(email, ApplicationConstant.Jwt.EMAIL_VERIFY_TOKEN_EXPIRATION_MS, claims, TokenType.EMAIL_VERIFY);
     }
 
-    private String generateToken(String subject, long expiration, Map<String, Object> claims) {
+    private String generateToken(String subject, long expiration, Map<String, Object> claims, TokenType type) {
         Instant now = Instant.now(clock);
+        claims.put(ApplicationConstant.Jwt.CLAIMS_KEY_TYPE, type.name());
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(subject)
@@ -69,13 +80,26 @@ public class JwtUtil {
                 .compact();
     }
 
-    public String extractSubject(String token) {
+    public String extractSubject(String token , TokenType tokenType) {
+        checkTokenType(token, tokenType);
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
+    }
+
+    private void checkTokenType(String token, TokenType tokenType) {
+        String claimTokenType = Jwts.parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get(ApplicationConstant.Jwt.CLAIMS_KEY_TYPE, String.class);
+
+        if (!tokenType.equals(TokenType.valueOf(claimTokenType)))
+            throw new InvalidTokenException();
     }
 
     public RoleType extractRole(String token) {
@@ -118,8 +142,13 @@ public class JwtUtil {
                 .getExpiration();
     }
 
-    public boolean validateToken(String token, String username) {
-        final String extractedUsername = extractSubject(token);
+    public boolean validateToken(String token, String username, TokenType tokenType) {
+        final String extractedUsername = extractSubject(token, tokenType);
         return (extractedUsername.equals(username) && !isTokenExpired(token));
+    }
+
+    public enum TokenType {
+        REFRESH, ACCESS, EMAIL_VERIFY
+
     }
 }
