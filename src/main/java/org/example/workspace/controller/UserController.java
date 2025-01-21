@@ -1,6 +1,7 @@
 package org.example.workspace.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.example.workspace.dto.request.UserPasswordReqDto;
 import org.example.workspace.dto.request.UserRecoveryReqDto;
 import org.example.workspace.dto.request.UserReqDto;
 import org.example.workspace.dto.request.VerifyTokenReqDto;
@@ -41,6 +42,11 @@ public class UserController {
     @PostMapping("/recover")
     public ResponseEntity<Boolean> recoveryUser(@RequestBody @Validated UserRecoveryReqDto dto) {
         return ResponseEntity.ok(service.recovery(dto.email()));
+    }
+
+    @PatchMapping("/password")
+    public ResponseEntity<Boolean> updatePassword(@RequestBody @Validated UserPasswordReqDto dto) {
+        return ResponseEntity.ok(service.updatePassword(dto));
     }
 
 }

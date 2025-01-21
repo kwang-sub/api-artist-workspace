@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class MailTemplate {
 
+    // TODO 프론트 url로 변경 필요
     @Value("${app.domain}")
     private String domain;
 

@@ -1,6 +1,7 @@
 package org.example.workspace.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.workspace.dto.request.UserPasswordReqDto;
 import org.example.workspace.dto.request.UserReqDto;
 import org.example.workspace.dto.response.UserResDto;
 import org.example.workspace.entity.Role;
@@ -40,7 +41,7 @@ public class UserService {
     }
 
     public UserResDto create(UserReqDto dto) {
-        checkInvalidRequest(dto);
+        checkInvalidCreateRequest(dto);
 
         Role role = roleRepository.findByRoleType(RoleType.ROLE_ARTIST)
                 .orElseThrow(() -> new EntityNotFoundException(Role.class, null));
@@ -57,11 +58,10 @@ public class UserService {
         return getDetail(user.getId());
     }
 
-    private void checkInvalidRequest(UserReqDto dto) {
+    private void checkInvalidCreateRequest(UserReqDto dto) {
         checkUserDuplicateLoginId(dto.loginId());
         checkUserDuplicateEmail(dto.email());
         checkConfirmPassword(dto.password(), dto.confirmPassword());
-
     }
 
     private void checkUserDuplicateLoginId(String loginId) {
@@ -102,5 +102,24 @@ public class UserService {
         String token = jwtUtil.generateRecoveryToken(user.getId(), verificationCode);
         mailService.sendUserRecovery(user.getLoginId(), token, user.getEmail());
         return true;
+    }
+
+    public Boolean updatePassword(UserPasswordReqDto dto) {
+        String token = dto.token();
+        String idString = jwtUtil.extractSubject(token, JwtUtil.TokenType.RECOVERY);
+        Long id = Long.parseLong(idString);
+
+        checkInvalidPasswordUpdateRequest(id, dto);
+
+        User user = repository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new EntityNotFoundException(User.class, id));
+        user.updatePassword(passwordEncoder.encode(dto.password()));
+        repository.save(user);
+        return true;
+    }
+
+    private void checkInvalidPasswordUpdateRequest(Long id, UserPasswordReqDto dto) {
+        userVerificationService.checkVerification(id, jwtUtil.extractCode(dto.token()));
+        checkConfirmPassword(dto.password(), dto.confirmPassword());
     }
 }

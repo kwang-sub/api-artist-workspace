@@ -93,6 +93,8 @@ public class JwtUtil {
 
     public String extractSubject(String token, TokenType tokenType) {
         checkTokenType(token, tokenType);
+        if (isTokenExpired(token))
+            throw new InvalidTokenException();
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
@@ -131,7 +133,16 @@ public class JwtUtil {
         }
     }
 
+    public String extractCode(String token) {
+        String code = extractClime(token, ApplicationConstant.Jwt.CLAIMS_KEY_CODE, String.class);
+        if (code == null || code.isEmpty())
+            throw new InvalidTokenException();
+        return code;
+    }
+
     private <T> T extractClime(String token, String key, Class<T> type) {
+        if (isTokenExpired(token))
+            throw new InvalidTokenException();
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()

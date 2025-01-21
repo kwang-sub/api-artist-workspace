@@ -7,8 +7,10 @@ import org.example.workspace.dto.request.UserPasswordReqDto;
 import org.example.workspace.dto.request.UserRecoveryReqDto;
 import org.example.workspace.dto.request.VerifyTokenReqDto;
 import org.example.workspace.entity.User;
+import org.example.workspace.entity.UserVerification;
 import org.example.workspace.factory.ObjectFactory;
 import org.example.workspace.factory.RequestParameterFactory;
+import org.example.workspace.repository.UserVerificationRepository;
 import org.example.workspace.util.JwtUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,13 +20,15 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -47,6 +51,10 @@ public class UserSupportTest {
     private RequestParameterFactory requestParameterFactory;
     @Autowired
     private JwtUtil jwtUtil;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private UserVerificationRepository userVerificationRepository;
 
     @MockitoBean
     private JavaMailSender mockMailSender;
@@ -107,6 +115,7 @@ public class UserSupportTest {
                 .andExpect(status().isOk());
         // then
 
+        verify(mockMailSender, times(1)).createMimeMessage();
         verify(mockMailSender, times(1)).send((MimeMessage) any());
     }
 
@@ -129,10 +138,61 @@ public class UserSupportTest {
     }
 
     @Test
+    void 사용자_계정찾기시_인증코드가_생성된다() throws Exception {
+        // given
+        when(mockMailSender.createMimeMessage()).thenReturn(new MimeMessage((Session) null));
+
+        User user = objectFactory.createUsersEntity();
+        String email = user.getEmail();
+        UserRecoveryReqDto userRecoveryReqDto = new UserRecoveryReqDto(email);
+        // when
+        mvc.perform(post("/api/v1/users/recover")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(userRecoveryReqDto))
+                )
+                .andExpect(status().isOk());
+        // then
+        Optional<UserVerification> optionalVerification = userVerificationRepository.findByUserId(user.getId());
+        assertThat(optionalVerification.isPresent()).isTrue();
+
+        verify(mockMailSender, times(1)).createMimeMessage();
+        verify(mockMailSender, times(1)).send((MimeMessage) any());
+    }
+
+    @Test
+    void 사용자_계정찾기시_인증코드가_이미_있는경우_재생성된다() throws Exception {
+        // given
+        when(mockMailSender.createMimeMessage()).thenReturn(new MimeMessage((Session) null));
+
+        User user = objectFactory.createUsersEntity();
+        UserVerification userVerification = objectFactory.createUserVerificationEntity(user);
+        String beforeVerificationCode = userVerification.getVerificationCode();
+        String email = user.getEmail();
+        UserRecoveryReqDto userRecoveryReqDto = new UserRecoveryReqDto(email);
+
+        // when
+        mvc.perform(post("/api/v1/users/recover")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(userRecoveryReqDto))
+                )
+                .andExpect(status().isOk());
+
+        // then
+        UserVerification findVerification = userVerificationRepository.findByUserId(user.getId())
+                .orElse(null);
+        assertThat(findVerification).isNotNull();
+        assertThat(findVerification.getVerificationCode()).isNotEqualTo(beforeVerificationCode);
+
+        verify(mockMailSender, times(1)).createMimeMessage();
+        verify(mockMailSender, times(1)).send((MimeMessage) any());
+    }
+
+    @Test
     void 사용자는_비밀번호_변경이_가능하다() throws Exception {
         // given
         User user = objectFactory.createUsersEntity();
-        String token = jwtUtil.generateRecoveryToken(user.getId(), user.getEmail());
+        UserVerification userVerification = objectFactory.createUserVerificationEntity(user);
+        String token = jwtUtil.generateRecoveryToken(user.getId(), userVerification.getVerificationCode());
         UserPasswordReqDto dto = objectFactory.createUserPasswordReqDto(token);
 
         // when
@@ -140,11 +200,8 @@ public class UserSupportTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsBytes(dto))
         ).andExpect(status().isOk());
-        // then
-    }
 
-    @Test
-    void 사용자_비밀번호_변경시에_토큰이_유효해야한다() {
-        fail();
+        // then
+        assertThat(passwordEncoder.matches(dto.password(), user.getPassword())).isTrue();
     }
 }

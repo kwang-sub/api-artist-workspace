@@ -4,17 +4,11 @@ import org.example.workspace.dto.request.AuthReqDto;
 import org.example.workspace.dto.request.UserPasswordReqDto;
 import org.example.workspace.dto.request.UserReqDto;
 import org.example.workspace.dto.request.UsersSnsReqDto;
-import org.example.workspace.entity.Contents;
-import org.example.workspace.entity.Role;
-import org.example.workspace.entity.User;
-import org.example.workspace.entity.UserSns;
+import org.example.workspace.entity.*;
 import org.example.workspace.entity.code.RoleType;
 import org.example.workspace.entity.code.SnsType;
 import org.example.workspace.exception.EntityNotFoundException;
-import org.example.workspace.repository.ContentsRepository;
-import org.example.workspace.repository.RoleRepository;
-import org.example.workspace.repository.UserRepository;
-import org.example.workspace.repository.UsersSnsRepository;
+import org.example.workspace.repository.*;
 import org.example.workspace.security.CustomUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestComponent;
@@ -43,6 +37,8 @@ public class ObjectFactory {
 
     @Autowired
     private ContentsRepository contentsRepository;
+    @Autowired
+    private UserVerificationRepository userVerificationRepository;
 
     public UserReqDto createUsersReqDto() {
         return UserReqDto
@@ -131,5 +127,11 @@ public class ObjectFactory {
                 "!work1234",
                 token
         );
+    }
+
+    public UserVerification createUserVerificationEntity(User user) {
+        UserVerification userVerification = UserVerification.create(user);
+        userVerificationRepository.save(userVerification);
+        return userVerification;
     }
 }

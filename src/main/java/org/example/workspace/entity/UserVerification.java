@@ -2,9 +2,10 @@ package org.example.workspace.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
-import lombok.*;
-
-import java.util.Random;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
@@ -35,8 +36,12 @@ public class UserVerification {
 
 
     private static String generateSixDigitNumber() {
-        Random random = new Random();
-        int randomNumber = 100000 + random.nextInt(900000);
+        long currentTimeMillis = System.currentTimeMillis();
+        int randomNumber = (int) ((currentTimeMillis % 900000) + 100000);
         return String.valueOf(randomNumber);
+    }
+
+    public void updateCode() {
+        this.verificationCode = generateSixDigitNumber();
     }
 }

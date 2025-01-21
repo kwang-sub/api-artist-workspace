@@ -60,10 +60,10 @@ public class User extends AbstractAuditingEntity {
     @Builder.Default
     private List<UserSns> userSnsList = new ArrayList<>();
 
-    public static User create(UserReqDto dto, String encodePassword, Role role) {
+    public static User create(UserReqDto dto, String encodedPassword, Role role) {
         return User.builder()
                 .loginId(dto.loginId())
-                .password(encodePassword)
+                .password(encodedPassword)
                 .userName(dto.userName())
                 .nickname(dto.nickname())
                 .workspaceName(dto.workspaceName())
@@ -92,5 +92,9 @@ public class User extends AbstractAuditingEntity {
 
     public void isVerified() {
         this.isActivated = true;
+    }
+
+    public void updatePassword(String encodedPassword) {
+        this.password = encodedPassword;
     }
 }
