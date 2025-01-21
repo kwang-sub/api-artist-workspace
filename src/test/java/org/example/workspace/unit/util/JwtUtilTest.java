@@ -3,6 +3,7 @@ package org.example.workspace.unit.util;
 import org.assertj.core.api.SoftAssertions;
 import org.example.workspace.dto.response.AuthTokenResDto;
 import org.example.workspace.entity.code.RoleType;
+import org.example.workspace.exception.InvalidTokenException;
 import org.example.workspace.util.JwtUtil;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -12,6 +13,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class JwtUtilTest {
 
@@ -141,5 +143,22 @@ class JwtUtilTest {
         // then
         assertThat(isValid).isTrue();
         assertThat(isInvalid).isFalse();
+    }
+
+    @Test
+    void 토큰을_다른유형으로_사용하려면_예외가_발생한다() {
+        // given
+        Clock clock = Clock.fixed(Instant.now(), ZoneId.systemDefault());
+        JwtUtil jwtUtil = new JwtUtil(clock, secret);
+
+        // when
+        String token = jwtUtil.generateEmailVerifyToken("test@example.com", 1L);
+
+        // then
+        assertThatThrownBy(() -> jwtUtil.extractSubject(token, JwtUtil.TokenType.ACCESS))
+                .isInstanceOf(InvalidTokenException.class);
+
+        assertThatThrownBy(() -> jwtUtil.extractRole(token))
+                .isInstanceOf(InvalidTokenException.class);
     }
 }
