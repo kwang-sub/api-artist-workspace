@@ -115,6 +115,7 @@ public class UserService {
                 .orElseThrow(() -> new EntityNotFoundException(User.class, id));
         user.updatePassword(passwordEncoder.encode(dto.password()));
         repository.save(user);
+        userVerificationService.completeVerify(user);
         return true;
     }
 

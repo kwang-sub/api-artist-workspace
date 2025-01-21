@@ -35,4 +35,10 @@ public class UserVerificationService {
         if (!userVerification.getVerificationCode().equals(code))
             throw new InvalidTokenException();
     }
+
+    public void completeVerify(User user) {
+        UserVerification userVerification = repository.findByUserId(user.getId())
+                .orElseThrow(() -> new EntityNotFoundException(UserVerification.class, null));
+        repository.delete(userVerification);
+    }
 }
