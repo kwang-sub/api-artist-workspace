@@ -3,21 +3,26 @@ package org.example.workspace.factory;
 import org.example.workspace.dto.request.AuthReqDto;
 import org.example.workspace.dto.request.UserReqDto;
 import org.example.workspace.dto.request.UsersSnsReqDto;
+import org.example.workspace.entity.Contents;
 import org.example.workspace.entity.Role;
 import org.example.workspace.entity.User;
 import org.example.workspace.entity.UserSns;
 import org.example.workspace.entity.code.RoleType;
 import org.example.workspace.entity.code.SnsType;
 import org.example.workspace.exception.EntityNotFoundException;
+import org.example.workspace.repository.ContentsRepository;
 import org.example.workspace.repository.RoleRepository;
 import org.example.workspace.repository.UserRepository;
 import org.example.workspace.repository.UsersSnsRepository;
 import org.example.workspace.security.CustomUserDetails;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestComponent;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Arrays;
 import java.util.List;
 
 @TestComponent
@@ -34,6 +39,9 @@ public class ObjectFactory {
 
     @Autowired
     private UsersSnsRepository usersSnsRepository;
+
+    @Autowired
+    private ContentsRepository contentsRepository;
 
     public UserReqDto createUsersReqDto() {
         return UserReqDto
@@ -91,10 +99,28 @@ public class ObjectFactory {
         return user;
     }
 
-    public UserSns createUsersSns(User user) {
+    public UserSns createUsersSnsEntity(User user) {
         UsersSnsReqDto usersSnsReqDto = createUsersSnsReqDto(SnsType.INSTAGRAM);
         UserSns userSns = UserSns.create(user, usersSnsReqDto);
         usersSnsRepository.save(userSns);
         return userSns;
+    }
+
+    public Contents createContentEntity() {
+        Contents contents = Contents.create(
+                "211551_0c3bf720-95b2-40df-995b-bd66e95223c5.pdf",
+                "test.jpg",
+                "C:\\workspace\\upload\\2025\\01",
+                151960L,
+                MediaType.IMAGE_JPEG_VALUE
+        );
+        contentsRepository.save(contents);
+        return contents;
+    }
+
+    public MockMultipartFile createMultipartFile(String filename, MediaType mediaType) {
+        byte[] dummyImage = new byte[1024];
+        Arrays.fill(dummyImage, (byte) 1);
+        return new MockMultipartFile("file", filename, mediaType.getType(), dummyImage);
     }
 }
