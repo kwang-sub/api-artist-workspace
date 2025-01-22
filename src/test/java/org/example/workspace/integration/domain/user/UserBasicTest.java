@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
 @SpringBootTest
@@ -63,5 +64,16 @@ public class UserBasicTest {
         softAssertions.assertThat(response.userSnsList()).hasSize(1);
         softAssertions.assertThat(response.getClass().getRecordComponents().length).isEqualTo(8);
         softAssertions.assertAll();
+    }
+
+
+    @Test
+    void 사용자는_본인_프로필을_수정할_수있다() {
+        fail();
+        // given
+
+        // when
+
+        // then
     }
 }
