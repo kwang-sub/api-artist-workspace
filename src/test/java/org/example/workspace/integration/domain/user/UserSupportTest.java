@@ -29,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -204,4 +205,45 @@ public class UserSupportTest {
         // then
         assertThat(passwordEncoder.matches(dto.password(), user.getPassword())).isTrue();
     }
+
+    @Test
+    void 사용자_로그인_아이디로_중복검사가능하다() {
+        fail();
+        // given
+
+        // when
+
+        // then
+    }
+
+    @Test
+    void 사용자_이메일로_중복검사가능하다() {
+        fail();
+        // given
+
+        // when
+
+        // then
+    }
+
+    @Test
+    void 사용자_홈페이지명으로_중복검사가능하다() {
+        fail();
+        // given
+
+        // when
+
+        // then
+    }
+
+    @Test
+    void 중복되는_계정_없을경우_false를_반환한다() {
+        fail();
+        // given
+
+        // when
+
+        // then
+    }
+
 }
