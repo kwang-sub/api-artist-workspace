@@ -33,7 +33,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 HttpMethod.POST + "/api/v1/users",
                 HttpMethod.POST + "/api/v1/users/verify",
                 HttpMethod.POST + "/api/v1/users/recover",
-                HttpMethod.PATCH + "/api/v1/users/password"
+                HttpMethod.PATCH + "/api/v1/users/password",
+                HttpMethod.GET + "/api/v1/users/duplicate"
         );
 
         String requestURI = request.getRequestURI();

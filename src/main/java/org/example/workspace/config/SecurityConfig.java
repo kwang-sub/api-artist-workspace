@@ -58,6 +58,7 @@ public class SecurityConfig {
                             .requestMatchers(HttpMethod.POST,"/api/v1/users/verify").permitAll()
                             .requestMatchers(HttpMethod.POST,"/api/v1/users/recover").permitAll()
                             .requestMatchers(HttpMethod.PATCH,"/api/v1/users/password").permitAll()
+                            .requestMatchers(HttpMethod.GET,"/api/v1/users/duplicate").permitAll()
                                 .anyRequest().authenticated()
                 );
 

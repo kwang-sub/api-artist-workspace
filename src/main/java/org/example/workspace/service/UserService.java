@@ -2,6 +2,7 @@ package org.example.workspace.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.workspace.common.ApplicationConstant;
+import org.example.workspace.dto.request.UserDuplicateReqDto;
 import org.example.workspace.dto.request.UserPasswordReqDto;
 import org.example.workspace.dto.request.UserReqDto;
 import org.example.workspace.dto.response.UserResDto;
@@ -135,5 +136,17 @@ public class UserService {
     private void checkInvalidPasswordUpdateRequest(Long id, UserPasswordReqDto dto) {
         userVerificationService.checkVerification(id, jwtUtil.extractCode(dto.token()));
         checkConfirmPassword(dto.password(), dto.confirmPassword());
+    }
+
+    @Transactional(readOnly = true)
+    public Boolean checkDuplicate(UserDuplicateReqDto dto) {
+        String value = dto.value();
+        Optional<User> user = switch (dto.type()) {
+            case EMAIL -> repository.findByEmailAndIsDeletedFalse(value);
+            case LOGIN_ID -> repository.findByLoginIdAndIsDeletedFalse(value);
+            case WORKSPACE_NAME -> repository.findByWorkspaceNameAndIsDeletedFalse(value);
+        };
+
+        return user.isPresent();
     }
 }

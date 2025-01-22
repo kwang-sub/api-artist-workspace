@@ -1,10 +1,7 @@
 package org.example.workspace.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.example.workspace.dto.request.UserPasswordReqDto;
-import org.example.workspace.dto.request.UserRecoveryReqDto;
-import org.example.workspace.dto.request.UserReqDto;
-import org.example.workspace.dto.request.VerifyTokenReqDto;
+import org.example.workspace.dto.request.*;
 import org.example.workspace.dto.response.UserResDto;
 import org.example.workspace.security.CustomUserDetails;
 import org.example.workspace.service.UserService;
@@ -49,4 +46,8 @@ public class UserController {
         return ResponseEntity.ok(service.updatePassword(dto));
     }
 
+    @GetMapping("/duplicate")
+    public ResponseEntity<Boolean> checkDuplicate(@Validated UserDuplicateReqDto dto) {
+        return ResponseEntity.ok(service.checkDuplicate(dto));
+    }
 }

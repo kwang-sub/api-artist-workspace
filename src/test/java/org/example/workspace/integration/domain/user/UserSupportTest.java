@@ -3,6 +3,7 @@ package org.example.workspace.integration.domain.user;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.mail.Session;
 import jakarta.mail.internet.MimeMessage;
+import org.example.workspace.dto.request.UserDuplicateReqDto;
 import org.example.workspace.dto.request.UserPasswordReqDto;
 import org.example.workspace.dto.request.UserRecoveryReqDto;
 import org.example.workspace.dto.request.VerifyTokenReqDto;
@@ -29,11 +30,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -207,43 +206,82 @@ public class UserSupportTest {
     }
 
     @Test
-    void 사용자_로그인_아이디로_중복검사가능하다() {
-        fail();
+    void 사용자_로그인_아이디로_중복검사가능하다() throws Exception {
         // given
+        User user = objectFactory.createUsersEntity();
 
         // when
+        MvcResult mvcResult = mvc.perform(get("/api/v1/users/duplicate")
+                        .param("value", user.getLoginId())
+                        .param("type", UserDuplicateReqDto.Type.LOGIN_ID.name())
+                )
+                .andExpect(status().isOk())
+                .andReturn();
 
         // then
+        String responseString = mvcResult.getResponse().getContentAsString();
+        Boolean response = objectMapper.readValue(responseString, Boolean.class);
+
+        assertThat(response).isTrue();
     }
 
     @Test
-    void 사용자_이메일로_중복검사가능하다() {
-        fail();
+    void 사용자_이메일로_중복검사가능하다() throws Exception {
         // given
+        User user = objectFactory.createUsersEntity();
 
         // when
+        MvcResult mvcResult = mvc.perform(get("/api/v1/users/duplicate")
+                        .param("value", user.getEmail())
+                        .param("type", UserDuplicateReqDto.Type.EMAIL.name())
+                )
+                .andExpect(status().isOk())
+                .andReturn();
 
         // then
+        String responseString = mvcResult.getResponse().getContentAsString();
+        Boolean response = objectMapper.readValue(responseString, Boolean.class);
+
+        assertThat(response).isTrue();
     }
 
     @Test
-    void 사용자_홈페이지명으로_중복검사가능하다() {
-        fail();
+    void 사용자_홈페이지명으로_중복검사가능하다() throws Exception {
         // given
+        User user = objectFactory.createUsersEntity();
 
         // when
+        MvcResult mvcResult = mvc.perform(get("/api/v1/users/duplicate")
+                        .param("value", user.getWorkspaceName())
+                        .param("type", UserDuplicateReqDto.Type.WORKSPACE_NAME.name())
+                )
+                .andExpect(status().isOk())
+                .andReturn();
 
         // then
+        String responseString = mvcResult.getResponse().getContentAsString();
+        Boolean response = objectMapper.readValue(responseString, Boolean.class);
+
+        assertThat(response).isTrue();
     }
 
     @Test
-    void 중복되는_계정_없을경우_false를_반환한다() {
-        fail();
+    void 중복되는_계정_없을경우_false를_반환한다() throws Exception {
         // given
 
         // when
+        MvcResult mvcResult = mvc.perform(get("/api/v1/users/duplicate")
+                        .param("value", "newuser123")
+                        .param("type", UserDuplicateReqDto.Type.LOGIN_ID.name())
+                )
+                .andExpect(status().isOk())
+                .andReturn();
 
         // then
+        String responseString = mvcResult.getResponse().getContentAsString();
+        Boolean response = objectMapper.readValue(responseString, Boolean.class);
+
+        assertThat(response).isFalse();
     }
 
 }
