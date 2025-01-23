@@ -56,7 +56,7 @@ public class UserSnsService {
         List<UserSns> toDelete = userSnsList.stream()
                 .filter(sns -> !updateIds.contains(sns.getId()))
                 .collect(Collectors.toList());
-        userSnsList.removeAll(toDelete);
+        user.userSnsRemoveAll(toDelete);
         repository.deleteAll(toDelete);
     }
 

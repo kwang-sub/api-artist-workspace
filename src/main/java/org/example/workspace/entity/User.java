@@ -112,4 +112,8 @@ public class User extends AbstractAuditingEntity {
         this.bio = dto.bio();
         this.logo = logo;
     }
+
+    public void userSnsRemoveAll(List<UserSns> delteList) {
+        this.userSnsList.removeAll(delteList);
+    }
 }

@@ -2,14 +2,12 @@ package org.example.workspace.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.workspace.common.ApplicationConstant;
-import org.example.workspace.dto.request.UserCreateReqDto;
-import org.example.workspace.dto.request.UserDuplicateReqDto;
-import org.example.workspace.dto.request.UserPasswordReqDto;
-import org.example.workspace.dto.request.UserUpdateReqDto;
+import org.example.workspace.dto.request.*;
 import org.example.workspace.dto.response.UserResDto;
 import org.example.workspace.entity.Contents;
 import org.example.workspace.entity.Role;
 import org.example.workspace.entity.User;
+import org.example.workspace.entity.code.MenuType;
 import org.example.workspace.entity.code.RoleType;
 import org.example.workspace.exception.AlreadyRegisteredIdentifierFieldException;
 import org.example.workspace.exception.EntityNotFoundException;
@@ -24,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @Transactional
@@ -39,6 +38,7 @@ public class UserService {
     private final JwtUtil jwtUtil;
     private final UserVerificationService userVerificationService;
     private final ContentsService contentsService;
+    private final UserMenuService userMenuService;
 
     @Transactional(readOnly = true)
     public UserResDto getDetail(Long id) {
@@ -61,6 +61,16 @@ public class UserService {
         repository.save(user);
 
         userSnsService.saveAll(user, dto.userSnsList());
+
+
+        userMenuService.savaAll(
+                user.getId(),
+                Set.of(
+                        new UserMenuReqDto(null, null, MenuType.SHOWCASE),
+                        new UserMenuReqDto(null, null, MenuType.ARTWORK),
+                        new UserMenuReqDto(null, null, MenuType.PROFILE)
+                )
+        );
 
         String token = jwtUtil.generateEmailVerifyToken(user.getEmail(), user.getId());
         mailService.sendSignupConfirmMail(token, user.getEmail());

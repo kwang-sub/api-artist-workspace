@@ -2,6 +2,7 @@ package org.example.workspace.factory;
 
 import org.example.workspace.dto.request.*;
 import org.example.workspace.entity.*;
+import org.example.workspace.entity.code.MenuType;
 import org.example.workspace.entity.code.RoleType;
 import org.example.workspace.entity.code.SnsType;
 import org.example.workspace.exception.EntityNotFoundException;
@@ -36,6 +37,8 @@ public class ObjectFactory {
     private ContentsRepository contentsRepository;
     @Autowired
     private UserVerificationRepository userVerificationRepository;
+    @Autowired
+    private UserMenuRepository userMenuRepository;
 
     public UserCreateReqDto createUserCreateReqDto(String loginId, String workspaceName, String email) {
         return UserCreateReqDto
@@ -150,5 +153,11 @@ public class ObjectFactory {
         UserVerification userVerification = UserVerification.create(user);
         userVerificationRepository.save(userVerification);
         return userVerification;
+    }
+
+    public UserMenu createUserMenu(User user, Contents contents, MenuType menuType) {
+        UserMenu userMenu = UserMenu.create(user, contents, menuType);
+        userMenuRepository.save(userMenu);
+        return userMenu;
     }
 }

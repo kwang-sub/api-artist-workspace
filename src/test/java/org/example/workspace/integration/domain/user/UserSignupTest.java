@@ -10,8 +10,10 @@ import org.example.workspace.dto.request.UsersSnsReqDto;
 import org.example.workspace.dto.response.FieldErrorResDto;
 import org.example.workspace.dto.response.UserResDto;
 import org.example.workspace.entity.User;
+import org.example.workspace.entity.UserMenu;
 import org.example.workspace.factory.ObjectFactory;
 import org.example.workspace.factory.RequestParameterFactory;
+import org.example.workspace.repository.UserMenuRepository;
 import org.example.workspace.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.RepeatedTest;
@@ -33,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Objects;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -60,6 +63,8 @@ public class UserSignupTest {
     private JavaMailSender mockMailSender;
 
     private final String URL = "/api/v1/users";
+    @Autowired
+    private UserMenuRepository userMenuRepository;
 
     @Test
     @DisplayName("유저생성이가능하다")
@@ -370,5 +375,28 @@ public class UserSignupTest {
 
         // then
         verify(mockMailSender, times(1)).send((MimeMessage) any());
+    }
+
+    @Test
+    void 사용자_등록시_메뉴는_기본등록되어야한다() throws Exception {
+        // given
+        when(mockMailSender.createMimeMessage()).thenReturn(new MimeMessage((Session) null));
+        UserCreateReqDto userCreateReqDto = objectFactory.createUserCreateReqDto("user123", "user", "user@example.com");
+
+        // when
+        MvcResult sut = mvc.perform(post(URL)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(userCreateReqDto))
+                )
+                .andExpect(status().isCreated())
+                .andReturn();
+
+
+        // then
+        String responseString = sut.getResponse().getContentAsString();
+        UserResDto response = objectMapper.readValue(responseString, UserResDto.class);
+        List<UserMenu> userMenuList = userMenuRepository.findByUserId(response.id());
+
+        assertThat(userMenuList).hasSize(3);
     }
 }

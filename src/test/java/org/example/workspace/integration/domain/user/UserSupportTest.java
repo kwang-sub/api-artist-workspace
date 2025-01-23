@@ -3,12 +3,14 @@ package org.example.workspace.integration.domain.user;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.mail.Session;
 import jakarta.mail.internet.MimeMessage;
-import org.example.workspace.dto.request.UserDuplicateReqDto;
-import org.example.workspace.dto.request.UserPasswordReqDto;
-import org.example.workspace.dto.request.UserRecoveryReqDto;
-import org.example.workspace.dto.request.VerifyTokenReqDto;
+import org.example.workspace.dto.request.*;
+import org.example.workspace.dto.response.MenuResDto;
+import org.example.workspace.dto.response.UserMenuResDto;
+import org.example.workspace.entity.Contents;
 import org.example.workspace.entity.User;
+import org.example.workspace.entity.UserMenu;
 import org.example.workspace.entity.UserVerification;
+import org.example.workspace.entity.code.MenuType;
 import org.example.workspace.factory.ObjectFactory;
 import org.example.workspace.factory.RequestParameterFactory;
 import org.example.workspace.repository.UserVerificationRepository;
@@ -28,6 +30,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -284,4 +287,84 @@ public class UserSupportTest {
         assertThat(response).isFalse();
     }
 
+    @Test
+    void 사용자_메뉴를_조회할_수있다() throws Exception {
+        User user = objectFactory.createUsersEntity("user123", "user", "user@example.com");
+        Contents contents = objectFactory.createContentEntity();
+        UserMenu userMenu = objectFactory.createUserMenu(user, contents, MenuType.ARTWORK);
+        String token = jwtUtil.generateSignInToken(user.getLoginId(), user.getRole().getRoleType()).accessToken();
+        // given
+        MvcResult mvcResult = mvc.perform(get("/api/v1/user-menus")
+                        .header("Authorization", "Bearer " + token)
+                ).andExpect(status().isOk())
+                .andReturn();
+        // when
+        String responseString = mvcResult.getResponse().getContentAsString();
+        MenuResDto response = objectMapper.readValue(responseString, MenuResDto.class);
+
+        // then
+        assertThat(response.menuList()).hasSize(1);
+        assertThat(response.menuList().get(0).menuType()).isEqualTo(userMenu.getMenuType());
+        assertThat(response.menuList().get(0).contents().contentsName()).isEqualTo(contents.getContentsName());
+    }
+
+    @Test
+    void 사용자는_메뉴를_관리할_수있다() throws Exception {
+        // given
+        User user = objectFactory.createUsersEntity("user123", "user", "user@example.com");
+        MenuReqDto dto = new MenuReqDto(
+                Set.of(
+                        new UserMenuReqDto(null, null, MenuType.PROFILE),
+                        new UserMenuReqDto(null, null, MenuType.SHOWCASE),
+                        new UserMenuReqDto(null, null, MenuType.ARTWORK)
+                )
+        );
+        String token = jwtUtil.generateSignInToken(user.getLoginId(), user.getRole().getRoleType()).accessToken();
+
+        // when
+        MvcResult mvcResult = mvc.perform(
+                        post("/api/v1/user-menus")
+                                .header("Authorization", "Bearer " + token)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsBytes(dto))
+                ).andExpect(status().isOk())
+                .andReturn();
+
+        // then
+        String responseString = mvcResult.getResponse().getContentAsString();
+        MenuResDto response = objectMapper.readValue(responseString, MenuResDto.class);
+
+        assertThat(response.menuList()).hasSize(3);
+    }
+
+    @Test
+    void 기존_메뉴_수정이_가능하다() throws Exception {
+        // given
+        User user = objectFactory.createUsersEntity("user123", "user", "user@example.com");
+        UserMenu userMenu = objectFactory.createUserMenu(user, null, MenuType.ARTWORK);
+        Contents contents = objectFactory.createContentEntity();
+        MenuReqDto dto = new MenuReqDto(
+                Set.of(new UserMenuReqDto(userMenu.getId(), contents.getId(), MenuType.SHOWCASE))
+        );
+        String token = jwtUtil.generateSignInToken(user.getLoginId(), user.getRole().getRoleType()).accessToken();
+
+        // when
+        MvcResult mvcResult = mvc.perform(
+                        post("/api/v1/user-menus")
+                                .header("Authorization", "Bearer " + token)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsBytes(dto))
+                ).andExpect(status().isOk())
+                .andReturn();
+
+        // then
+        String responseString = mvcResult.getResponse().getContentAsString();
+        MenuResDto response = objectMapper.readValue(responseString, MenuResDto.class);
+
+        assertThat(response.menuList()).hasSize(1);
+        UserMenuResDto responseMenu = response.menuList().get(0);
+
+        assertThat(responseMenu.id()).isEqualTo(userMenu.getId());
+        assertThat(responseMenu.contents().id()).isEqualTo(contents.getId());
+    }
 }
