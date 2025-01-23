@@ -57,4 +57,9 @@ public class ContentsService {
         return contentsMapper.toDto(contents);
 
     }
+
+    public Contents getEntity(Long id) {
+        return contentsRepository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new EntityNotFoundException(Contents.class, id));
+    }
 }

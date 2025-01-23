@@ -62,7 +62,7 @@ public class UserSupportTest {
     @Test
     void 사용자_인증성공시_활성화된다() throws Exception {
         // given
-        User user = objectFactory.createUsersEntity();
+        User user = objectFactory.createUsersEntity("user123", "user", "user@example.com");
         assertThat(user.getIsActivated()).isFalse();
         String token = jwtUtil.generateEmailVerifyToken(user.getEmail(), user.getId());
         VerifyTokenReqDto verifyTokenReqDto = new VerifyTokenReqDto(token);
@@ -80,7 +80,7 @@ public class UserSupportTest {
     @Test
     void 사용자_인증시_올바르지_않은_토큰은_예외발생한다() throws Exception {
         // given
-        User user = objectFactory.createUsersEntity();
+        User user = objectFactory.createUsersEntity("user123", "user", "user@example.com");
         assertThat(user.getIsActivated()).isFalse();
         String token = jwtUtil.generateSignInToken(user.getUserName(), user.getRole().getRoleType())
                 .accessToken();
@@ -104,7 +104,7 @@ public class UserSupportTest {
         // given
         when(mockMailSender.createMimeMessage()).thenReturn(new MimeMessage((Session) null));
 
-        User user = objectFactory.createUsersEntity();
+        User user = objectFactory.createUsersEntity("user123", "user", "user@example.com");
         String email = user.getEmail();
         UserRecoveryReqDto userRecoveryReqDto = new UserRecoveryReqDto(email);
         // when
@@ -142,7 +142,7 @@ public class UserSupportTest {
         // given
         when(mockMailSender.createMimeMessage()).thenReturn(new MimeMessage((Session) null));
 
-        User user = objectFactory.createUsersEntity();
+        User user = objectFactory.createUsersEntity("user123", "user", "user@example.com");
         String email = user.getEmail();
         UserRecoveryReqDto userRecoveryReqDto = new UserRecoveryReqDto(email);
         // when
@@ -164,7 +164,7 @@ public class UserSupportTest {
         // given
         when(mockMailSender.createMimeMessage()).thenReturn(new MimeMessage((Session) null));
 
-        User user = objectFactory.createUsersEntity();
+        User user = objectFactory.createUsersEntity("user123", "user", "user@example.com");
         UserVerification userVerification = objectFactory.createUserVerificationEntity(user);
         String beforeVerificationCode = userVerification.getVerificationCode();
         String email = user.getEmail();
@@ -190,7 +190,7 @@ public class UserSupportTest {
     @Test
     void 사용자는_비밀번호_변경이_가능하다() throws Exception {
         // given
-        User user = objectFactory.createUsersEntity();
+        User user = objectFactory.createUsersEntity("user123", "user", "user@example.com");
         UserVerification userVerification = objectFactory.createUserVerificationEntity(user);
         String token = jwtUtil.generateRecoveryToken(user.getId(), userVerification.getVerificationCode());
         UserPasswordReqDto dto = objectFactory.createUserPasswordReqDto(token);
@@ -208,7 +208,7 @@ public class UserSupportTest {
     @Test
     void 사용자_로그인_아이디로_중복검사가능하다() throws Exception {
         // given
-        User user = objectFactory.createUsersEntity();
+        User user = objectFactory.createUsersEntity("user123", "user", "user@example.com");
 
         // when
         MvcResult mvcResult = mvc.perform(get("/api/v1/users/duplicate")
@@ -228,7 +228,7 @@ public class UserSupportTest {
     @Test
     void 사용자_이메일로_중복검사가능하다() throws Exception {
         // given
-        User user = objectFactory.createUsersEntity();
+        User user = objectFactory.createUsersEntity("user123", "user", "user@example.com");
 
         // when
         MvcResult mvcResult = mvc.perform(get("/api/v1/users/duplicate")
@@ -248,7 +248,7 @@ public class UserSupportTest {
     @Test
     void 사용자_홈페이지명으로_중복검사가능하다() throws Exception {
         // given
-        User user = objectFactory.createUsersEntity();
+        User user = objectFactory.createUsersEntity("user123", "user", "user@example.com");
 
         // when
         MvcResult mvcResult = mvc.perform(get("/api/v1/users/duplicate")

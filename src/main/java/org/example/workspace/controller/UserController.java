@@ -25,14 +25,23 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<UserResDto> createUser(@RequestBody @Validated UserReqDto dto) {
+    public ResponseEntity<UserResDto> createUser(@RequestBody @Validated UserCreateReqDto dto) {
         UserResDto body = service.create(dto);
         // TODO 응답 url 확인 필요
         return ResponseEntity.created(URI.create("d")).body(body);
     }
 
+    @PatchMapping
+    public ResponseEntity<UserResDto> updateUser(
+            @AuthenticationPrincipal CustomUserDetails user,
+            @RequestBody @Validated UserUpdateReqDto dto
+    ) {
+        return ResponseEntity.ok(service.update(user.getId(), dto));
+    }
+
     @PostMapping("/verify")
     public ResponseEntity<Boolean> verify(@RequestBody @Validated VerifyTokenReqDto dto) {
+
         return ResponseEntity.ok(service.emailVerify(dto.token()));
     }
 
@@ -48,6 +57,6 @@ public class UserController {
 
     @GetMapping("/duplicate")
     public ResponseEntity<Boolean> checkDuplicate(@Validated UserDuplicateReqDto dto) {
-        return ResponseEntity.ok(service.checkDuplicate(dto));
+        return ResponseEntity.ok(service.getDuplicateWhether(dto));
     }
 }

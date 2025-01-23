@@ -42,7 +42,7 @@ public final class ApplicationConstant {
 
         public static final String EXCEPTION_PARAM_LOGIN_ID = "사용자 아이디";
         public static final String EXCEPTION_PARAM_EMAIL = "이메일";
-        public static final String EXCEPTION_PARAM_WORKSPACE_NAME = "홈페이지명";
+        public static final String EXCEPTION_PARAM_WORKSPACE_NAME = "워크스페이스명";
     }
 
 }

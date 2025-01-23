@@ -3,7 +3,8 @@ package org.example.workspace.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.example.workspace.common.ApplicationConstant;
-import org.example.workspace.dto.request.UserReqDto;
+import org.example.workspace.dto.request.UserCreateReqDto;
+import org.example.workspace.dto.request.UserUpdateReqDto;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,7 +61,11 @@ public class User extends AbstractAuditingEntity {
     @Builder.Default
     private List<UserSns> userSnsList = new ArrayList<>();
 
-    public static User create(UserReqDto dto, String encodedPassword, Role role) {
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "logo_file_id")
+    private Contents logo;
+
+    public static User create(UserCreateReqDto dto, String encodedPassword, Role role) {
         return User.builder()
                 .loginId(dto.loginId())
                 .password(encodedPassword)
@@ -96,5 +101,15 @@ public class User extends AbstractAuditingEntity {
 
     public void updatePassword(String encodedPassword) {
         this.password = encodedPassword;
+    }
+
+    public void update(UserUpdateReqDto dto, Contents logo) {
+        this.userName = dto.userName();
+        this.nickname = dto.nickname();
+        this.workspaceName = dto.workspaceName();
+        this.email = dto.email();
+        this.phoneNumber = dto.phoneNumber();
+        this.bio = dto.bio();
+        this.logo = logo;
     }
 }

@@ -6,6 +6,7 @@ import org.example.workspace.entity.code.SnsType;
 
 @Builder
 public record UsersSnsReqDto(
+        Long id,
         @NotNull
         SnsType snsType,
         @NotBlank

@@ -2,10 +2,12 @@ package org.example.workspace.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.workspace.common.ApplicationConstant;
+import org.example.workspace.dto.request.UserCreateReqDto;
 import org.example.workspace.dto.request.UserDuplicateReqDto;
 import org.example.workspace.dto.request.UserPasswordReqDto;
-import org.example.workspace.dto.request.UserReqDto;
+import org.example.workspace.dto.request.UserUpdateReqDto;
 import org.example.workspace.dto.response.UserResDto;
+import org.example.workspace.entity.Contents;
 import org.example.workspace.entity.Role;
 import org.example.workspace.entity.User;
 import org.example.workspace.entity.code.RoleType;
@@ -36,6 +38,7 @@ public class UserService {
     private final MailService mailService;
     private final JwtUtil jwtUtil;
     private final UserVerificationService userVerificationService;
+    private final ContentsService contentsService;
 
     @Transactional(readOnly = true)
     public UserResDto getDetail(Long id) {
@@ -45,8 +48,10 @@ public class UserService {
         return userMapper.toDto(user);
     }
 
-    public UserResDto create(UserReqDto dto) {
-        checkInvalidCreateRequest(dto);
+    public UserResDto create(UserCreateReqDto dto) {
+        checkUserDuplicateLoginId(dto.loginId());
+        checkDuplicateEmailAndWorkspaceName(null, dto.email(), dto.workspaceName());
+        checkConfirmPassword(dto.password(), dto.confirmPassword());
 
         Role role = roleRepository.findByRoleType(RoleType.ROLE_ARTIST)
                 .orElseThrow(() -> new EntityNotFoundException(Role.class, null));
@@ -63,16 +68,31 @@ public class UserService {
         return getDetail(user.getId());
     }
 
-    private void checkInvalidCreateRequest(UserReqDto dto) {
-        checkUserDuplicateLoginId(dto.loginId());
-        checkUserDuplicateEmail(dto.email());
-        checkUserDuplicateWorkspaceName(dto.workspaceName());
-        checkConfirmPassword(dto.password(), dto.confirmPassword());
+
+    public UserResDto update(Long id, UserUpdateReqDto dto) {
+        User user = repository.findByIdAndIsDeletedFalse(id)
+                .orElseThrow(() -> new EntityNotFoundException(User.class, id));
+        checkDuplicateEmailAndWorkspaceName(id, dto.email(), dto.workspaceName());
+
+        Contents logo = dto.logoId() != null ? contentsService.getEntity(dto.logoId()) : null;
+
+        user.update(dto, logo);
+        repository.save(user);
+        userSnsService.saveAll(user, dto.userSnsList());
+
+        return getDetail(user.getId());
     }
 
-    private void checkUserDuplicateWorkspaceName(String workspaceName) {
-        Optional<User> existUser = repository.findByWorkspaceNameAndIsDeletedFalse(workspaceName);
-        if (existUser.isPresent())
+    private void checkDuplicateEmailAndWorkspaceName(Long userId, String email, String workspaceName) {
+        checkUserDuplicateEmail(userId, email);
+        checkUserDuplicateWorkspaceName(userId, workspaceName);
+    }
+
+    private void checkUserDuplicateWorkspaceName(Long userId, String workspaceName) {
+        User existUser = repository.findByWorkspaceNameAndIsDeletedFalse(workspaceName)
+                .orElse(null);
+        if ((userId == null && existUser != null) ||
+                (userId != null && existUser != null && !existUser.getId().equals(userId)))
             throw new AlreadyRegisteredIdentifierFieldException(ApplicationConstant.Exception.EXCEPTION_PARAM_WORKSPACE_NAME);
     }
 
@@ -82,9 +102,11 @@ public class UserService {
             throw new AlreadyRegisteredIdentifierFieldException(ApplicationConstant.Exception.EXCEPTION_PARAM_LOGIN_ID);
     }
 
-    private void checkUserDuplicateEmail(String email) {
-        Optional<User> existUser = repository.findByEmailAndIsDeletedFalse(email);
-        if (existUser.isPresent())
+    private void checkUserDuplicateEmail(Long userId, String email) {
+        User existUser = repository.findByEmailAndIsDeletedFalse(email)
+                .orElse(null);
+        if ((userId == null && existUser != null) ||
+                (userId != null && existUser != null && !existUser.getId().equals(userId)))
             throw new AlreadyRegisteredIdentifierFieldException(ApplicationConstant.Exception.EXCEPTION_PARAM_EMAIL);
     }
 
@@ -139,7 +161,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public Boolean checkDuplicate(UserDuplicateReqDto dto) {
+    public Boolean getDuplicateWhether(UserDuplicateReqDto dto) {
         String value = dto.value();
         Optional<User> user = switch (dto.type()) {
             case EMAIL -> repository.findByEmailAndIsDeletedFalse(value);

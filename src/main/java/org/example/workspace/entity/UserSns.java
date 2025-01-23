@@ -43,4 +43,9 @@ public class UserSns extends AbstractAuditingEntity {
         user.addSns(userSns);
         return userSns;
     }
+
+    public void update(UsersSnsReqDto dto) {
+        this.snsType = dto.snsType();
+        this.snsUsername = dto.snsUsername();
+    }
 }
