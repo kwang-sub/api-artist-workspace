@@ -76,4 +76,22 @@ public class UserBasicTest {
 
         // then
     }
+
+    @Test
+    void 프로필_수정시_워크스페이스명이_중복될수_없다() {
+        // given
+        fail();
+        // when
+
+        // then
+    }
+
+    @Test
+    void 프로필_수정시_이메일이_중복될수_없다() {
+        // given
+        fail();
+        // when
+
+        // then
+    }
 }
