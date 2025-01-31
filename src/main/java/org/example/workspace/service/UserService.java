@@ -49,9 +49,7 @@ public class UserService {
     }
 
     public UserResDto create(UserCreateReqDto dto) {
-        checkUserDuplicateLoginId(dto.loginId());
-        checkDuplicateEmailAndWorkspaceName(null, dto.email(), dto.workspaceName());
-        checkConfirmPassword(dto.password(), dto.confirmPassword());
+        checkValidateCreateUser(null, dto);
 
         Role role = roleRepository.findByRoleType(RoleType.ROLE_ARTIST)
                 .orElseThrow(() -> new EntityNotFoundException(Role.class, null));
@@ -82,7 +80,7 @@ public class UserService {
     public UserResDto update(Long id, UserUpdateReqDto dto) {
         User user = repository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new EntityNotFoundException(User.class, id));
-        checkDuplicateEmailAndWorkspaceName(id, dto.email(), dto.workspaceName());
+        checkUserDuplicateWorkspaceName(id, dto.workspaceName());
 
         Contents logo = dto.logoId() != null ? contentsService.getEntity(dto.logoId()) : null;
 
@@ -93,9 +91,11 @@ public class UserService {
         return getDetail(user.getId());
     }
 
-    private void checkDuplicateEmailAndWorkspaceName(Long userId, String email, String workspaceName) {
-        checkUserDuplicateEmail(userId, email);
-        checkUserDuplicateWorkspaceName(userId, workspaceName);
+    private void checkValidateCreateUser(Long userId, UserCreateReqDto dto) {
+        checkUserDuplicateEmail(userId, dto.email());
+        checkUserDuplicateWorkspaceName(userId, dto.workspaceName());
+        checkUserDuplicateLoginId(dto.loginId());
+        checkConfirmPassword(dto.password(), dto.confirmPassword());
     }
 
     private void checkUserDuplicateWorkspaceName(Long userId, String workspaceName) {

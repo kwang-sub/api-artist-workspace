@@ -66,7 +66,6 @@ public class ObjectFactory {
                 .userName("updatename")
                 .nickname("updatenickname")
                 .workspaceName("updateworkspaceName")
-                .email("update@gmail.com")
                 .phoneNumber("01112341234")
                 .bio("자기 소개글")
                 .userSnsList(

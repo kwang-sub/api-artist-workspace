@@ -107,7 +107,6 @@ public class User extends AbstractAuditingEntity {
         this.userName = dto.userName();
         this.nickname = dto.nickname();
         this.workspaceName = dto.workspaceName();
-        this.email = dto.email();
         this.phoneNumber = dto.phoneNumber();
         this.bio = dto.bio();
         this.logo = logo;

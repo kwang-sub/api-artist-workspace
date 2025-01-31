@@ -257,12 +257,8 @@ public class UserSignupTest {
     void 아이디가_같은_유저는_생성_안된다() throws Exception {
         // given
         when(mockMailSender.createMimeMessage()).thenReturn(new MimeMessage((Session) null));
-        UserCreateReqDto userCreateReqDto = objectFactory.createUserCreateReqDto("user123", "user", "user@example.com");
-        mvc.perform(post(URL)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(userCreateReqDto))
-                )
-                .andExpect(status().isCreated());
+        User user = objectFactory.createUsersEntity("user123", "user", "user@example.com");
+        UserCreateReqDto userCreateReqDto = objectFactory.createUserCreateReqDto(user.getLoginId(), "otherUser", "otheruser123@example.com");
 
         // when
         MvcResult mvcResult = mvc.perform(post(URL)

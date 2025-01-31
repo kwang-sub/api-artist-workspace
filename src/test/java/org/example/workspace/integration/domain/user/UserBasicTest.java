@@ -105,7 +105,6 @@ public class UserBasicTest {
         softAssertions.assertThat(response.userName()).isEqualTo(dto.userName());
         softAssertions.assertThat(response.nickname()).isEqualTo(dto.nickname());
         softAssertions.assertThat(response.workspaceName()).isEqualTo(dto.workspaceName());
-        softAssertions.assertThat(response.email()).isEqualTo(dto.email());
         softAssertions.assertThat(response.phoneNumber()).isEqualTo(dto.phoneNumber());
         softAssertions.assertThat(response.bio()).isEqualTo(dto.bio());
         softAssertions.assertThat(response.userSnsList()).hasSize(2);
@@ -126,7 +125,6 @@ public class UserBasicTest {
                 .userName("update")
                 .nickname("update")
                 .workspaceName(exitsUser.getWorkspaceName())
-                .email("update@gmail.com")
                 .phoneNumber("01112341234")
                 .build();
         String token = jwtUtil.generateSignInToken(user.getLoginId(), user.getRole().getRoleType()).accessToken();
@@ -143,33 +141,5 @@ public class UserBasicTest {
         ProblemDetail response = objectMapper.readValue(responseString, ProblemDetail.class);
 
         assertThat(response.getDetail()).isEqualTo("이미 등록된 워크스페이스명입니다.");
-    }
-
-    @Test
-    void 프로필_수정시_이메일이_중복될수_없다() throws Exception {
-        // given
-        User exitsUser = objectFactory.createUsersEntity("exitsuser123", "exitsuser", "exitsuser@example.com");
-        User user = objectFactory.createUsersEntity("user123", "user", "user@example.com");
-        UserUpdateReqDto dto = UserUpdateReqDto.builder()
-                .userName("update")
-                .nickname("update")
-                .workspaceName("update")
-                .email(exitsUser.getEmail())
-                .phoneNumber("01112341234")
-                .build();
-        String token = jwtUtil.generateSignInToken(user.getLoginId(), user.getRole().getRoleType()).accessToken();
-        // when
-        MvcResult mvcResult = mvc.perform(patch("/api/v1/users")
-                        .header("Authorization", "Bearer " + token)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(dto))
-                ).andExpect(status().isBadRequest())
-                .andReturn();
-
-        // then
-        String responseString = mvcResult.getResponse().getContentAsString();
-        ProblemDetail response = objectMapper.readValue(responseString, ProblemDetail.class);
-
-        assertThat(response.getDetail()).isEqualTo("이미 등록된 이메일입니다.");
     }
 }
