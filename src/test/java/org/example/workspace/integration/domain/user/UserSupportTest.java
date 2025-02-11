@@ -66,6 +66,7 @@ public class UserSupportTest {
                 .andReturn();
 
 
+
         // then
         String responseString = mvcResult.getResponse().getContentAsString();
         ProblemDetail response = objectMapper.readValue(responseString, ProblemDetail.class);
