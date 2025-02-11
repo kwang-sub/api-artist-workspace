@@ -65,6 +65,7 @@ public class UserSupportTest {
                 .andExpect(status().isBadRequest())
                 .andReturn();
 
+
         // then
         String responseString = mvcResult.getResponse().getContentAsString();
         ProblemDetail response = objectMapper.readValue(responseString, ProblemDetail.class);
